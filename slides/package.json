@@ -1,25 +1,25 @@
 {
-  "name": "slides",
-  "type": "module",
-  "private": true,
-  "scripts": {
-    "build": "slidev build",
-    "dev": "slidev --open",
-    "export": "slidev export",
-    "lint": "biome lint .",
-    "lint:fix": "biome lint --write .",
-    "format": "biome format .",
-    "format:fix": "biome format --write .",
-    "check": "biome check .",
-    "check:fix": "biome check --write ."
-  },
-  "dependencies": {
-    "@slidev/cli": "^52.15.0",
-    "@slidev/theme-default": "latest",
-    "@slidev/theme-seriph": "latest",
-    "vue": "^3.5.33"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.4.14"
-  }
+	"name": "slides",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"build": "slidev build",
+		"dev": "slidev --open",
+		"export": "slidev export",
+		"lint": "biome lint .",
+		"lint:fix": "biome lint --write .",
+		"format": "biome format .",
+		"format:fix": "biome format --write .",
+		"check": "biome check .",
+		"check:fix": "biome check --write ."
+	},
+	"dependencies": {
+		"@slidev/cli": "^52.15.0",
+		"@slidev/theme-default": "latest",
+		"@slidev/theme-seriph": "latest",
+		"vue": "^3.5.33"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.14"
+	}
 }
