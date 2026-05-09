@@ -19,7 +19,7 @@ transition: view-transition
 # enable Comark Syntax: https://comark.dev/syntax/markdown
 comark: true
 # duration of the presentation
-duration: 120m
+duration: 120min
 ---
 <h1 style="view-transition-name: deck-title">End to End Deployment</h1>
 
