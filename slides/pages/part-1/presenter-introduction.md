@@ -2,22 +2,20 @@
 layout: two-cols-header
 ---
 
-
-
 # Presenters
 
 ::left::
 
 ## Tien Cheng
 
-- Y1 CS
+![Tien Cheng](../../presenters/tiencheng.jpg){class="w-60 rounded"}
 
-<!-- Insert image -->
+- Y1 CS
+- NUS Hackers Coreteam Member
 
 ::right::
 
 ## Putt
 
 - Y1 BAIS
-
-<!-- Insert image -->
+- NUS Hackers Coreteam Member
