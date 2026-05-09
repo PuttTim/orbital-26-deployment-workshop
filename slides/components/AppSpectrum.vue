@@ -1,41 +1,41 @@
 <script setup lang="ts">
 interface App {
-  name: string
-  logo: string
-  dotColor: string
-  annotation?: string
+	name: string;
+	logo: string;
+	dotColor: string;
+	annotation?: string;
 }
 
 // biome-ignore lint/correctness/noUnusedVariables: used in <template> via v-for
 const apps: App[] = [
-  {
-    name: 'Calculator',
-    logo: '/logos/Calculator_(iOS_26)_app_icon.png',
-    dotColor: '#10b981',
-  },
-  {
-    name: 'Minecraft',
-    logo: '/logos/minecraft_bedrock_icon.svg',
-    dotColor: '#34d399',
-    annotation: 'Multiplayer needs a server',
-  },
-  {
-    name: 'Spotify',
-    logo: '/logos/Spotify_App_Logo.svg',
-    dotColor: '#fbbf24',
-    annotation: 'Has an offline mode',
-  },
-  {
-    name: 'Instagram',
-    logo: '/logos/Instagram_logo_2016.svg',
-    dotColor: '#fb923c',
-  },
-  {
-    name: 'Grab',
-    logo: '/logos/grab_app_icon.svg',
-    dotColor: '#ef4444',
-  },
-]
+	{
+		name: "Calculator",
+		logo: "/logos/Calculator_(iOS_26)_app_icon.png",
+		dotColor: "#10b981",
+	},
+	{
+		name: "Minecraft",
+		logo: "/logos/minecraft_bedrock_icon.svg",
+		dotColor: "#34d399",
+		annotation: "Multiplayer needs a server",
+	},
+	{
+		name: "Spotify",
+		logo: "/logos/Spotify_App_Logo.svg",
+		dotColor: "#fbbf24",
+		annotation: "Has an offline mode",
+	},
+	{
+		name: "Instagram",
+		logo: "/logos/Instagram_logo_2016.svg",
+		dotColor: "#fb923c",
+	},
+	{
+		name: "Grab",
+		logo: "/logos/grab_app_icon.svg",
+		dotColor: "#ef4444",
+	},
+];
 </script>
 
 <template>
