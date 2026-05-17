@@ -583,7 +583,7 @@ Each checkpoint should give you something you can open, call, or inspect.
 ---
 ---
 
-# Fork and run the starter
+# Fork the starter
 
 Start here:
 
@@ -591,7 +591,21 @@ Start here:
 https://github.com/nushackers/orbital-26-deployment-workshop
 ```
 
-Click **Fork**, then clone your fork:
+Click **Fork** to create your own copy under your GitHub account.
+
+Forking first matters because session 2 will connect CI/CD to your GitHub repo. Everyone needs their own copy to push to.
+
+Checkpoint:
+
+- You have a fork under your own GitHub account
+- You can push branches without touching the workshop repo
+
+---
+---
+
+# Run the starter locally
+
+Clone your fork:
 
 ```bash
 git clone https://github.com/<your-username>/orbital-26-deployment-workshop.git
@@ -600,11 +614,8 @@ pnpm install
 pnpm dev
 ```
 
-Forking first matters because session 2 will connect CI/CD to your GitHub repo. Everyone needs their own copy to push to.
-
 Checkpoint:
 
-- You have a fork under your own GitHub account
 - Local React app opens
 - You can refresh without errors
 - You can explain why the URL still only works for you
