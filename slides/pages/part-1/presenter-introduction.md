@@ -8,7 +8,7 @@ layout: two-cols-header
 
 ## Tien Cheng
 
-![Tien Cheng](../../presenters/tiencheng.jpg){class="w-60 rounded"}
+![Tien Cheng](../../public/presenters/tiencheng.jpg){class="w-60 rounded"}
 
 - Y1 CS
 - NUS Hackers Coreteam Member

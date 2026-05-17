@@ -27,7 +27,7 @@ Your first task: get the app off your laptop.
 
 ::left::
 
-![](/fake-slack-ai-slop.png)
+![](../public/fake-slack-ai-slop.png)
 
 ::right::
 
@@ -385,7 +385,7 @@ layout: two-cols-header
 
 ::right::
 
-![Containerisation](/docker-meme.jpg)
+![Containerisation](../public/docker-meme.jpg)
 
 ---
 layout: two-cols-header
@@ -402,7 +402,7 @@ layout: two-cols-header
 
 ::right::
 
-![Serverless](/serverless.jpeg)
+![Serverless](../public/serverless.jpeg)
 
 ---
 ---
