@@ -685,6 +685,8 @@ Each checkpoint should give you something you can open, call, or inspect.
 ---
 ---
 
+<CheckpointBadge />
+
 # Fork the starter
 
 Start here:
@@ -692,6 +694,11 @@ Start here:
 ```txt
 https://github.com/nushackers/orbital-26-deployment-workshop
 ```
+
+<div class="flex items-center gap-3 my-3">
+  <span class="bg-orange-500 text-white font-black text-xl px-4 py-1.5 rounded-lg shadow tracking-wide">FORK</span>
+  <span class="text-gray-400 font-semibold italic">not clone</span>
+</div>
 
 Click **Fork** to create your own copy under your GitHub account.
 
@@ -704,6 +711,8 @@ Checkpoint:
 
 ---
 ---
+
+<CheckpointBadge />
 
 # Run the starter locally
 
@@ -724,6 +733,8 @@ Checkpoint:
 
 ---
 ---
+
+<CheckpointBadge />
 
 # Install and log in to Wrangler
 
@@ -770,6 +781,8 @@ Cloudflare supports JSON and TOML config. Their docs recommend `wrangler.jsonc` 
 ---
 ---
 
+<CheckpointBadge />
+
 # Deploy the React app
 
 ```bash
@@ -815,6 +828,8 @@ export default app;
 ---
 ---
 
+<CheckpointBadge />
+
 # API checkpoint
 
 Open this in the browser:
@@ -852,6 +867,8 @@ Keep deeper database design for later.
 
 ---
 ---
+
+<CheckpointBadge />
 
 # Create an `items` table
 
@@ -963,6 +980,8 @@ Use the same client pattern for `POST /api/items`.
 ---
 ---
 
+<CheckpointBadge />
+
 # Supabase checkpoint
 
 Open in the browser:
@@ -1032,6 +1051,8 @@ The binding name is what your Worker code uses.
 
 ---
 ---
+
+<CheckpointBadge />
 
 # R2 API shape
 
