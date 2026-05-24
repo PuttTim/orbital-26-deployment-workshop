@@ -15,98 +15,105 @@ src: ./part-1/presenter-introduction.md
 layout: section
 ---
 
-## Today: make your app real
+## Today, let's make your app real!
 
 ---
-layout: two-cols-header
+layout: center
+class: text-center
 ---
 
-# Welcome, new intern!
+## So, you've built your app.
 
-Your first task: get the app off your laptop.
+But it's stuck on your laptop.
 
-::left::
+<img src="/localhost-meme.png" class="mt-8 max-h-72 rounded-xl shadow-lg mx-auto" />
 
-![](../public/fake-slack-ai-slop.png)
 
-::right::
-
-- You have a React app running locally
-- Your friend cannot open `localhost:5173`
-- Your boss wants a link that works for everyone
-- Today, we make that link
 
 ---
-layout: section
----
-
-## Phase 1: Why deployment matters
-
----
+layout: center
+class: text-center
 ---
 
 # The localhost problem
 
-`localhost` means "this computer".
+When they open: `http://localhost:5173`  
+Their browser looks on **their** machine, not yours.
 
-<div class="grid grid-cols-2 gap-8 mt-10">
-<div>
+<div class="flex justify-center mt-6">
 
-## On your laptop
+```mermaid {scale: 0.78}
+flowchart TB
+    subgraph THEM["<b>THEIR LAPTOP</b>"]
+        direction LR
+        TB(["Their browser"]) --> TL["localhost:5173<br/>nothing running"]
+    end
 
-- `localhost:5173` works
-- Your code is nearby
-- Your database might be fake or local
-- Your secrets are in `.env`
+    subgraph YOU["<b>YOUR LAPTOP</b>"]
+        direction LR
+        YB(["Your browser"]) --> YL["localhost:5173<br/>dev server running"]
+    end
+
+    TB -. "can't reach your localhost" .-> YL
+
+    classDef machine fill:#1a3a52,color:#fff,stroke:#0f2538,stroke-width:2px
+    classDef browser fill:#a8c8d8,color:#0f2538,stroke:#7ba8bd,stroke-width:2px,font-weight:bold
+    classDef good fill:#2d6a4f,color:#fff,stroke:#1b4332,stroke-width:2px
+    classDef bad fill:#8b2020,color:#fff,stroke:#5a1414,stroke-width:2px
+
+    class YOU,THEM machine
+    class YB,TB browser
+    class YL good
+    class TL bad
+
+    linkStyle 0 stroke:#94a3b8,stroke-width:2px
+    linkStyle 1 stroke:#e07a7a,stroke-width:2px,stroke-dasharray:6 4
+    linkStyle 2 stroke:#94a3b8,stroke-width:2px
+```
 
 </div>
-<div>
 
-## On your friend's laptop
-
-- `localhost:5173` points to their laptop
-- They do not have your running server
-- They do not have your environment variables
-- They cannot see what you see
-
-</div>
-</div>
-
----
-layout: quote
----
-
-# But boss, it works on my machine!
+`localhost` always means "this computer."
 
 ---
 layout: two-cols-header
 ---
 
-# Production fixes the audience problem
+# To production and beyond!
+
+
 
 ::left::
 
 ## Local
 
-- Works for you
-- Changes every time you edit code
-- Good for development
-- Bad as a public demo link
+A local server is great for development.
+
+- It lets you test changes immediately.
+
+- You can break things without affecting others.
+
+But... you can't expect everyone to have your laptop.
+
 
 ::right::
 
 ## Production
 
-- Works from a public URL
-- Runs on infrastructure you do not carry around
-- Uses real configuration
-- Gives everyone the same app
+Our ultimate goal is to deploy to a production environment. 
+
+A production environment:
+
+- is where the latest stable version of your app runs
+- is accessible to everyone, not just you
+- requires higher standards of quality and reliability
+
 
 ---
 layout: section
 ---
 
-## Phase 2: What runs where
+## What does it mean to deploy to production?
 
 ---
 ---
@@ -121,11 +128,13 @@ layout: two-cols-header
 
 # The client-server model
 
-Your app, the **client**, talks to a **server** over the internet.
+Most apps work like this:
+
+Your app, the **client** (running on the user's device), talks to a **server** over the internet.
 
 ::left::
 
-```mermaid {scale: 0.7}
+```mermaid {scale: 0.65}
 architecture-beta
     group backend(cloud)[Cloud]
 
@@ -145,7 +154,7 @@ architecture-beta
 
 ::right::
 
-- **Client**: the browser tab or mobile app the user sees
+- **Client**: the browser tab or mobile/desktop app the user sees
 - **Internet**: how the client reaches your server
 - **API server**: runs backend code, for example Hono, Express, FastAPI
 - **Database**: structured state, for example users, posts, events
@@ -162,30 +171,31 @@ backgroundSize: contain
 
 # Deployment environments
 
+
 | Environment | Where it runs | Who uses it | What it is for |
 | --- | --- | --- | --- |
 | Local | Your computer | You | Building and debugging |
 | Staging | Cloud server | Your team | Testing before release |
 | Production | Cloud server | Real users | The live app |
 
-Staging matters, but we will go deeper in session 2.
+We'll skip the staging environment in this workshop (and frankly, you probably don't need it for Orbital), but the tl;dr is: it's a copy of the production environment, minus the live users.
 
 ---
 ---
 
 # How code gets to production
 
-Deployment is part of a loop, not a one-shot button press.
+The **Software Development Lifecycle (SDLC)**
 
-<div class="flex justify-center mt-4">
+<div class="flex justify-center mt-2">
 
-```mermaid {scale: 0.72}
+```mermaid {scale: 0.8}
 flowchart LR
     subgraph DEV["<b>DEV</b> (your machine)"]
         direction LR
         P([PLAN]) --> D([DESIGN]) --> C([CODE]) --> B([BUILD]) --> T([TEST])
     end
-    subgraph STG["<b>STAGING</b> (replica server)"]
+    subgraph STG["<b>STAGING</b> (optional)"]
         direction LR
         R([RELEASE])
     end
@@ -197,22 +207,114 @@ flowchart LR
     M -.feedback.-> P
 
     classDef devBox fill:#1a3a52,color:#fff,stroke:#0f2538,stroke-width:2px
-    classDef stgBox fill:#8b6914,color:#fff,stroke:#5a4410,stroke-width:2px
+    classDef stgBox fill:#3d2f0a,color:#aaa,stroke:#5a4410,stroke-width:2px
     classDef prodBox fill:#c0392b,color:#fff,stroke:#8b2820,stroke-width:2px
     classDef phase fill:#a8c8d8,color:#0f2538,stroke:#7ba8bd,stroke-width:1px,font-weight:bold
+    classDef stgPhase fill:#6b5a3a,color:#ccc,stroke:#5a4410,stroke-width:1px
 
     class DEV devBox
     class STG stgBox
     class PROD prodBox
-    class P,D,C,B,T,R,O,M phase
+    class P,D,C,B,T phase
+    class R stgPhase
+    class O,M phase
     linkStyle default stroke:#999,stroke-width:2px
 ```
 
 </div>
 
-- Local is where you move fastest
-- Staging is where the team checks before users see it
-- Production is where mistakes become visible
+<v-clicks depth="2" class="mt-4 text-sm">
+
+- **Dev**: your machine
+  - **Plan & design**: decide what to build *(out of scope today)*
+  - **Code, build, test**: write the app, compile it, try it
+- **Staging**: replica server 
+  - **Release**: one last check before real users see it
+- **Production**: live users
+  - **Deploy**: push your build to a public URL
+  - **Monitor**: watch logs and errors after users hit it
+- **Feedback loop**: what breaks in production feeds the next plan
+
+</v-clicks>
+
+
+---
+layout: two-cols-header
+---
+
+# When deployment goes wrong
+
+Ever lost your company millions in a few minutes?
+
+::left::
+
+<div class="ml-6 pr-2 pb-12 pt-2">
+  <img src="/knight-capital-stock.jpg" class="max-h-[48vh] w-full object-contain" />
+</div>
+
+
+::right::
+
+<div class="ml-6 pr-2 pb-12 pt-2">
+  <img src="/knight-capital.webp" class="max-h-[48vh] w-full object-contain" />
+</div>
+
+
+
+---
+layout: two-cols-header
+---
+
+# Oops... what broke?
+
+
+Knight reused an old flag bit for a new trading feature.
+
+::left::
+
+Previously, this bit was used to enable a "Power Peg" trading strategy.
+
+When this bit was set, the server would "buy high and sell low" (not good investment advice btw)
+
+Unfortunately, when they deployed the new feature manually, one of the servers missed the update.
+
+When markets opened, the old server began shredding money.
+
+So they tried to rollback all the servers, but that just made all the servers run the old code.
+
+::right::
+
+<div class="ml-6 pr-2 pb-12 pt-2">
+  <img src="/money-go-brrr.png" class="max-h-[48vh] w-full object-contain" />
+</div>
+
+Source: [YouTube:
+Dev Loses $440 Million in 28 minutes, Chaos Ensues
+](https://youtu.be/263CooDJZCY)
+
+
+
+
+---
+---
+
+# So why am I telling you this?
+
+- Deploying by hand works until it doesn't
+- You want the same build on every server, every time
+- That's what CI/CD automates
+- You probably won't lose $440M, but you can still ship broken code to real users
+
+
+---
+layout: statement
+---
+
+### By the way, if you're wondering what happened to the guy who messed up the deployment...
+
+<!-- he didn't get fired; management did. bad process, not one bad engineer. -->
+
+
 
 ---
 ---
@@ -469,7 +571,7 @@ flowchart TB
 layout: section
 ---
 
-## Phase 3: Deploy the frontend
+## Let's deploy our app!
 
 ---
 layout: section
@@ -542,7 +644,7 @@ You should have:
 - Your own fork of this repository
 - A terminal you are comfortable using
 
-Keep your `.env` files and API keys out of Git.
+Keep your `.env` files, `.dev.vars`, and API keys out of Git.
 
 ---
 ---
@@ -686,15 +788,7 @@ Checkpoint:
 layout: quote
 ---
 
-# We now have production
-
-Not perfect production. Real production.
-
----
-layout: section
----
-
-## Phase 4: Add backend, database, and file storage
+# Behold, production!
 
 ---
 ---
@@ -747,14 +841,76 @@ If this works, your deployed frontend and deployed backend are sharing one publi
 
 Supabase gives us hosted Postgres plus a friendly dashboard.
 
-Today we only need:
+Create a project if you have not already. Today we only need:
 
 - Project URL
-- An API key suitable for the demo
-- One simple table
-- One API route that reads or writes a row
+- Publishable API key
+- One `items` table
+- One Hono route that reads from it
 
 Keep deeper database design for later.
+
+---
+---
+
+# Create an `items` table
+
+In the Supabase dashboard, open **SQL Editor** or **Table Editor**.
+
+SQL version:
+
+```sql
+create table public.items (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  created_at timestamptz default now()
+);
+```
+
+Checkpoint:
+
+- You see `items` in the dashboard
+- You can explain what a row represents in your app
+
+---
+---
+
+# Turn on RLS for the demo
+
+Supabase uses **Row Level Security**. New tables often have RLS enabled with no policies yet, hence, queries then fail or return nothing.
+
+For today only, add a permissive policy:
+
+```sql
+alter table public.items enable row level security;
+
+create policy "Workshop demo access"
+  on public.items
+  for all
+  to anon, authenticated
+  using (true)
+  with check (true);
+```
+
+Real projects would not use `using (true)` in production.
+
+If queries still fail, check **Authentication → Policies** first.
+
+---
+---
+
+# Which API key?
+
+From **Settings → API Keys** in Supabase:
+
+- **Project URL** → `SUPABASE_URL`
+- **Publishable key** (`sb_publishable_...`) → `SUPABASE_KEY`
+
+The publishable key replaced the old `anon` key. Either works for this workshop.
+
+This key respects RLS. Keep it in the Worker, not in your React bundle.
+
+Never put the **secret** / `service_role` key in frontend code.
 
 ---
 ---
@@ -775,25 +931,65 @@ pnpm wrangler secret put SUPABASE_URL
 pnpm wrangler secret put SUPABASE_KEY
 ```
 
-Never commit real secrets.
+Please don't commit real secrets.
+
+<img src="/api-key-meme.jpeg" class="h-48 w-full object-contain" />
 
 ---
 ---
 
-# Supabase API shape
+# Connect Hono to Supabase
 
-Use one simple route for the workshop:
-
-```txt
-GET /api/items
-POST /api/items
+```bash
+pnpm add @supabase/supabase-js
 ```
 
-Checkpoint:
+```ts
+import { createClient } from "@supabase/supabase-js";
 
-- `GET /api/items` returns JSON from Supabase
-- `POST /api/items` creates one row
-- Refreshing the deployed app still shows the data
+app.get("/api/items", async (c) => {
+  const supabase = createClient(
+    c.env.SUPABASE_URL,
+    c.env.SUPABASE_KEY,
+  );
+  const { data, error } = await supabase.from("items").select("*");
+  if (error) return c.json({ error: error.message }, 500);
+  return c.json(data);
+});
+```
+
+Use the same client pattern for `POST /api/items`.
+
+---
+---
+
+# Supabase checkpoint
+
+Open in the browser:
+
+```txt
+https://your-project.your-subdomain.workers.dev/api/items
+```
+
+Expected at first:
+
+```json
+[]
+```
+
+After you insert a row:
+
+```json
+[
+  {
+    "id": "...",
+    "name": "hello",
+    "created_at": "..."
+  }
+]
+```
+
+If you get `[]` forever or a 500, check RLS policies first.
 
 ---
 ---
@@ -906,14 +1102,14 @@ By the end, you should have:
 - A public `workers.dev` URL
 - A React app served by Cloudflare Workers
 - `GET /api/health` returning JSON
-- A Hono route connected to Supabase
+- `GET /api/items` returning rows from Supabase
 - An R2 bucket bound to the Worker
 - At least one file stored through the app or API
 
 ---
 ---
 
-# What we are saving for session 2
+# What's next?
 
 - Staging environments
 - GitHub Actions CI/CD
