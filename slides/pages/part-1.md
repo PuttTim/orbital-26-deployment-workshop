@@ -274,13 +274,13 @@ Knight reused an old flag bit for a new trading feature.
 
 Previously, this bit was used to enable a "Power Peg" trading strategy.
 
-When this bit was set, the server would "buy high and sell low" (not good investment advice btw)
+When this bit was set, the server would "buy high and sell low" (not good investment advice btw).
 
 Unfortunately, when they deployed the new feature manually, one of the servers missed the update.
 
 When markets opened, the old server began shredding money.
 
-So they tried to rollback all the servers, but that just made all the servers run the old code.
+So they tried to roll back all the servers, but that just made all the servers run the old code.
 
 ::right::
 
@@ -894,7 +894,7 @@ Checkpoint:
 
 # Turn on RLS for the demo
 
-Supabase uses **Row Level Security**. New tables often have RLS enabled with no policies yet, hence, queries then fail or return nothing.
+Supabase uses **Row Level Security**. New tables often have RLS enabled with no policies yet. When that happens, reads return zero rows, and writes are denied with an error.
 
 For today only, add a permissive policy:
 
