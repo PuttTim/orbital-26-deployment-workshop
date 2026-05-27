@@ -56,19 +56,19 @@ flowchart TB
 
     TB -. "can't reach your localhost" .-> YL
 
-    classDef machine fill:#1a3a52,color:#fff,stroke:#0f2538,stroke-width:2px
-    classDef browser fill:#a8c8d8,color:#0f2538,stroke:#7ba8bd,stroke-width:2px,font-weight:bold
-    classDef good fill:#2d6a4f,color:#fff,stroke:#1b4332,stroke-width:2px
-    classDef bad fill:#8b2020,color:#fff,stroke:#5a1414,stroke-width:2px
+    classDef machine fill:#1f2937,color:#f3f4f6,stroke:#f8941d,stroke-width:2px
+    classDef browser fill:#2563eb,color:#ffffff,stroke:#1d4ed8,stroke-width:2px,font-weight:bold
+    classDef good fill:#10b981,color:#ffffff,stroke:#047857,stroke-width:2px,font-weight:bold
+    classDef bad fill:#dc2626,color:#ffffff,stroke:#991b1b,stroke-width:2px,font-weight:bold
 
-    class YOU,THEM machine
+    style YOU fill:#1f2937,stroke:#f8941d,stroke-width:2px,color:#f3f4f6
+    style THEM fill:#1f2937,stroke:#f8941d,stroke-width:2px,color:#f3f4f6
+
     class YB,TB browser
     class YL good
     class TL bad
 
-    linkStyle 0 stroke:#94a3b8,stroke-width:2px
-    linkStyle 1 stroke:#e07a7a,stroke-width:2px,stroke-dasharray:6 4
-    linkStyle 2 stroke:#94a3b8,stroke-width:2px
+    linkStyle 1 stroke:#f8941d,stroke-width:2px,stroke-dasharray:6 4
 ```
 
 </div>
@@ -124,6 +124,7 @@ layout: section
 
 ---
 layout: two-cols-header
+class: diagram-heavy compact
 ---
 
 # The client-server model
@@ -134,7 +135,7 @@ Your app, the **client** (running on the user's device), talks to a **server** o
 
 ::left::
 
-```mermaid {scale: 0.65}
+```mermaid {scale: 0.56}
 architecture-beta
     group backend(cloud)[Cloud]
 
@@ -181,6 +182,7 @@ backgroundSize: contain
 We'll skip the staging environment in this workshop (and frankly, you probably don't need it for Orbital), but the tl;dr is: it's a copy of the production environment, minus the live users.
 
 ---
+class: diagram-heavy compact
 ---
 
 # How code gets to production
@@ -189,7 +191,7 @@ The **Software Development Lifecycle (SDLC)**
 
 <div class="flex justify-center mt-2">
 
-```mermaid {scale: 0.8}
+```mermaid {scale: 0.68}
 flowchart LR
     subgraph DEV["<b>DEV</b> (your machine)"]
         direction LR
@@ -206,24 +208,23 @@ flowchart LR
     T ==> R ==> O
     M -.feedback.-> P
 
-    classDef devBox fill:#1a3a52,color:#fff,stroke:#0f2538,stroke-width:2px
-    classDef stgBox fill:#3d2f0a,color:#aaa,stroke:#5a4410,stroke-width:2px
-    classDef prodBox fill:#c0392b,color:#fff,stroke:#8b2820,stroke-width:2px
-    classDef phase fill:#a8c8d8,color:#0f2538,stroke:#7ba8bd,stroke-width:1px,font-weight:bold
-    classDef stgPhase fill:#6b5a3a,color:#ccc,stroke:#5a4410,stroke-width:1px
+    classDef phase fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
+    classDef stgPhase fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:1px,font-weight:bold
+    classDef prodPhase fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:1px,font-weight:bold
 
-    class DEV devBox
-    class STG stgBox
-    class PROD prodBox
+    style DEV fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
+    style STG fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
+    style PROD fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
+
     class P,D,C,B,T phase
     class R stgPhase
-    class O,M phase
-    linkStyle default stroke:#999,stroke-width:2px
+    class O,M prodPhase
+    linkStyle default stroke:#9ca3af,stroke-width:2px
 ```
 
 </div>
 
-<v-clicks depth="2" class="mt-4 text-sm">
+<v-clicks depth="2" class="mt-3 text-sm">
 
 - **Dev**: your machine
   - **Plan & design**: decide what to build *(out of scope today)*
@@ -267,20 +268,18 @@ layout: two-cols-header
 
 # Oops... what broke?
 
-
 Knight reused an old flag bit for a new trading feature.
 
 ::left::
 
-Previously, this bit was used to enable a "Power Peg" trading strategy.
+<v-clicks>
 
-When this bit was set, the server would "buy high and sell low" (not good investment advice btw).
+- That bit used to enable **Power Peg**: buy high, sell low
+- Deploy was manual; **one server** missed the update
+- Market opens → rogue server runs old logic at full speed
+- Rollback made it worse: **all servers** ran the old code
 
-Unfortunately, when they deployed the new feature manually, one of the servers missed the update.
-
-When markets opened, the old server began shredding money.
-
-So they tried to roll back all the servers, but that just made all the servers run the old code.
+</v-clicks>
 
 ::right::
 
@@ -288,9 +287,11 @@ So they tried to roll back all the servers, but that just made all the servers r
   <img src="/money-go-brrr.png" class="max-h-[48vh] w-full object-contain" />
 </div>
 
-Source: [YouTube:
-Dev Loses $440 Million in 28 minutes, Chaos Ensues
-](https://youtu.be/263CooDJZCY)
+Source: [YouTube: Dev Loses $440 Million in 28 minutes, Chaos Ensues](https://youtu.be/263CooDJZCY)
+
+<!--
+Presenter notes: Power Peg was a retired strategy. The "(not good investment advice)" joke lands well here if you want it verbally.
+-->
 
 
 
@@ -348,13 +349,14 @@ CI/CD is automation for the boring, repeatable parts of shipping.
 </div>
 
 ---
+class: diagram-heavy compact
 ---
 
 # CI/CD flow
 
 <div class="flex justify-center mt-6">
 
-```mermaid {scale: 0.82}
+```mermaid {scale: 0.7}
 flowchart LR
     subgraph CI["<b>CONTINUOUS INTEGRATION</b>"]
         direction LR
@@ -368,17 +370,18 @@ flowchart LR
     end
     M ==> R ==> D
 
-    classDef ciBox fill:#1a3a52,color:#fff,stroke:#0f2538,stroke-width:2px
-    classDef ciStep fill:#a8c8d8,color:#0f2538,stroke:#7ba8bd,stroke-width:1px,font-weight:bold
-    classDef delBox fill:#8b2020,color:#fff,stroke:#5a1414,stroke-width:2px,font-weight:bold
-    classDef depBox fill:#c0392b,color:#fff,stroke:#8b2820,stroke-width:2px,font-weight:bold
+    classDef ciStep fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
+    classDef delStep fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:2px,font-weight:bold
+    classDef depStep fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:2px,font-weight:bold
 
-    class CI ciBox
+    style CI fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
+    style CDel fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
+    style CDep fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
+
     class B,T,M ciStep
-    class CDel,R delBox
-    class CDep,D depBox
-
-    linkStyle default stroke:#999,stroke-width:2px
+    class R delStep
+    class D depStep
+    linkStyle default stroke:#9ca3af,stroke-width:2px
 ```
 
 </div>
@@ -386,6 +389,7 @@ flowchart LR
 Common tools: GitHub Actions, GitLab CI, Jenkins.
 
 ---
+class: diagram-heavy compact
 ---
 
 # How CI/CD fits today
@@ -412,16 +416,18 @@ flowchart LR
     W ==> O
     M -.feedback.-> P
 
-    classDef devBox fill:#1a3a52,color:#fff,stroke:#0f2538,stroke-width:2px
-    classDef ciBox fill:#8b2020,color:#fff,stroke:#5a1414,stroke-width:2px
-    classDef prodBox fill:#c0392b,color:#fff,stroke:#8b2820,stroke-width:2px
-    classDef phase fill:#a8c8d8,color:#0f2538,stroke:#7ba8bd,stroke-width:1px,font-weight:bold
+    classDef phase fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
+    classDef manualPhase fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:1px,font-weight:bold
+    classDef prodPhase fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:1px,font-weight:bold
 
-    class DEV devBox
-    class MANUAL ciBox
-    class PROD prodBox
-    class P,D,C,B,W,O,M phase
-    linkStyle default stroke:#999,stroke-width:2px
+    style DEV fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
+    style MANUAL fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
+    style PROD fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
+
+    class P,D,C phase
+    class B,W manualPhase
+    class O,M prodPhase
+    linkStyle default stroke:#9ca3af,stroke-width:2px
 ```
 
 </div>
@@ -535,13 +541,14 @@ layout: two-cols-header
 </div>
 
 ---
+class: diagram-heavy compact
 ---
 
 # What we are building today
 
 <div class="flex justify-center mt-4">
 
-```mermaid {scale: 0.72}
+```mermaid {scale: 0.64}
 flowchart TB
     U[User browser] --> W[Cloudflare Worker]
     W --> A[React static assets]
@@ -549,10 +556,10 @@ flowchart TB
     H --> S[(Supabase Postgres)]
     H --> R[(Cloudflare R2 bucket)]
 
-    classDef client fill:#2563eb,color:#fff,stroke:#1d4ed8
-    classDef worker fill:#f97316,color:#111827,stroke:#ea580c
-    classDef api fill:#10b981,color:#06281c,stroke:#059669
-    classDef data fill:#7c3aed,color:#fff,stroke:#6d28d9
+    classDef client fill:#2563eb,color:#ffffff,stroke:#1d4ed8,stroke-width:2px,font-weight:bold
+    classDef worker fill:#e66000,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
+    classDef api fill:#10b981,color:#ffffff,stroke:#047857,stroke-width:2px,font-weight:bold
+    classDef data fill:#7c3aed,color:#ffffff,stroke:#5b21b6,stroke-width:2px,font-weight:bold
 
     class U client
     class W,A worker
@@ -647,6 +654,7 @@ You should have:
 Keep your `.env` files, `.dev.vars`, and API keys out of Git.
 
 ---
+class: diagram-heavy compact
 ---
 
 # Workshop route map
@@ -654,26 +662,26 @@ Keep your `.env` files, `.dev.vars`, and API keys out of Git.
 <div class="grid grid-cols-2 gap-4 mt-4">
 <div>
 
-```mermaid {scale: 0.58}
+```mermaid {scale: 0.52}
 flowchart TB
     F[Fork repo] --> C[Clone your fork]
     C --> I[Install deps]
     I --> L[Wrangler login]
     L --> D[Deploy React]
 
-    classDef step fill:#1f2937,color:#fff,stroke:#111827
+    classDef step fill:#1f2937,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
     class F,C,I,L,D step
 ```
 
 </div>
 <div>
 
-```mermaid {scale: 0.58}
+```mermaid {scale: 0.52}
 flowchart TB
     H[Add Hono API] --> D[Connect Supabase]
     D --> R[Connect R2]
 
-    classDef step fill:#1f2937,color:#fff,stroke:#111827
+    classDef step fill:#1f2937,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
     class H,D,R step
 ```
 
@@ -692,7 +700,7 @@ Each checkpoint should give you something you can open, call, or inspect.
 Start here:
 
 ```txt
-https://github.com/nushackers/orbital-26-deployment-workshop
+https://hckr.cc/orbital-deployment-26
 ```
 
 <div class="flex items-center gap-3 my-3">
@@ -1071,13 +1079,14 @@ Checkpoint:
 - Supabase can store the file key as metadata
 
 ---
+class: diagram-heavy compact
 ---
 
 # The final architecture
 
 <div class="flex justify-center mt-4">
 
-```mermaid {scale: 0.68}
+```mermaid {scale: 0.6}
 flowchart TB
     B[Browser] -->|Open URL| W[Cloudflare Worker]
     W -->|Serve| A[React assets]
@@ -1088,10 +1097,10 @@ flowchart TB
     B -->|POST /api/files| H
     H -->|Objects| R[(R2)]
 
-    classDef client fill:#2563eb,color:#fff,stroke:#1d4ed8
-    classDef worker fill:#f97316,color:#111827,stroke:#ea580c
-    classDef api fill:#10b981,color:#06281c,stroke:#059669
-    classDef data fill:#7c3aed,color:#fff,stroke:#6d28d9
+    classDef client fill:#2563eb,color:#ffffff,stroke:#1d4ed8,stroke-width:2px,font-weight:bold
+    classDef worker fill:#e66000,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
+    classDef api fill:#10b981,color:#ffffff,stroke:#047857,stroke-width:2px,font-weight:bold
+    classDef data fill:#7c3aed,color:#ffffff,stroke:#5b21b6,stroke-width:2px,font-weight:bold
 
     class B client
     class W,A worker
