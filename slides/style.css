@@ -415,6 +415,46 @@ html.dark .nus-logo-light {
 	object-fit: cover;
 }
 
+.nus-two-cols-grid .laptop-server-meme {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
+	min-height: 0;
+	padding: 0.15rem 0 2.75rem;
+	transform: rotate(-1deg);
+}
+
+.nus-two-cols-grid .laptop-server-meme img {
+	max-height: 38vh;
+}
+
+.nus-two-cols-grid .laptop-server-meme-caption {
+	max-width: 14rem;
+}
+
+.slidev-layout.laptop-as-server-slide.compact {
+	padding-bottom: 3.5rem;
+}
+
+.slidev-layout.laptop-as-server-slide.compact h1 {
+	margin-bottom: 0.45rem;
+	font-size: 2rem;
+}
+
+.slidev-layout.laptop-as-server-slide .nus-two-cols-header {
+	gap: 0.55rem;
+}
+
+.slidev-layout.laptop-as-server-slide .nus-two-cols-grid {
+	gap: 1.75rem;
+	align-items: start;
+}
+
+.slidev-layout.laptop-as-server-slide .nus-two-cols-grid > section:first-child {
+	overflow: visible;
+}
+
 .slidev-layout.presenters-slide {
 	display: flex;
 	flex-direction: column;

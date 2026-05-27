@@ -49,47 +49,31 @@ These slides are currently hosted this way too: built files served from a public
 
 ---
 layout: two-cols-header
-class: compact
+class: compact media-heavy laptop-as-server-slide
 ---
 
 # Your laptop can be a server too
 
 ::left::
 
-<div v-click="1">
-
-When you run:
-
-```bash
-pnpm dev
-```
-
-</div>
-
-<div v-click="2">
-
-Vite starts a development server on your laptop.
-
-</div>
-
-<div v-click="3">
-
-`http://localhost:5173` means:
-
-> ask this computer, on port 5173, for the app
-
-</div>
+<LaptopAsServer />
 
 ::right::
 
-<div v-click="4">
-
-`localhost = local + host`
-
-- **Host**: the machine serving something
-- **Local**: this machine
-
+<div v-click="5" class="laptop-server-meme">
+  <img
+    src="/my-laptop-is-a-server.jpeg"
+    alt="Sticky note on a laptop that says: This is a server! DO NOT CLOSE LID!!"
+    class="w-[88%] max-w-[22rem] max-h-[38vh] object-cover object-center rounded-md border border-[var(--nus-border)] shadow-[var(--nus-shadow)]"
+  />
+  <p class="laptop-server-meme-caption nus-token-faint mt-2 text-center text-[0.72rem] italic">
+    Staging environment, circa 2012
+  </p>
 </div>
+
+<!--
+Presenter notes: After click 4 (local + host), reveal the meme. "Yes, your laptop really is a server when you run pnpm dev."
+-->
 
 ---
 ---
