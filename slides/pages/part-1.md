@@ -56,19 +56,19 @@ flowchart TB
 
     TB -. "can't reach your localhost" .-> YL
 
-    classDef machine fill:#1a3a52,color:#fff,stroke:#0f2538,stroke-width:2px
-    classDef browser fill:#a8c8d8,color:#0f2538,stroke:#7ba8bd,stroke-width:2px,font-weight:bold
-    classDef good fill:#2d6a4f,color:#fff,stroke:#1b4332,stroke-width:2px
-    classDef bad fill:#8b2020,color:#fff,stroke:#5a1414,stroke-width:2px
+    classDef machine fill:#1f2937,color:#f3f4f6,stroke:#f8941d,stroke-width:2px
+    classDef browser fill:#2563eb,color:#ffffff,stroke:#1d4ed8,stroke-width:2px,font-weight:bold
+    classDef good fill:#10b981,color:#ffffff,stroke:#047857,stroke-width:2px,font-weight:bold
+    classDef bad fill:#dc2626,color:#ffffff,stroke:#991b1b,stroke-width:2px,font-weight:bold
 
-    class YOU,THEM machine
+    style YOU fill:#1f2937,stroke:#f8941d,stroke-width:2px,color:#f3f4f6
+    style THEM fill:#1f2937,stroke:#f8941d,stroke-width:2px,color:#f3f4f6
+
     class YB,TB browser
     class YL good
     class TL bad
 
-    linkStyle 0 stroke:#94a3b8,stroke-width:2px
-    linkStyle 1 stroke:#e07a7a,stroke-width:2px,stroke-dasharray:6 4
-    linkStyle 2 stroke:#94a3b8,stroke-width:2px
+    linkStyle 1 stroke:#f8941d,stroke-width:2px,stroke-dasharray:6 4
 ```
 
 </div>
@@ -208,19 +208,18 @@ flowchart LR
     T ==> R ==> O
     M -.feedback.-> P
 
-    classDef devBox fill:#1a3a52,color:#fff,stroke:#0f2538,stroke-width:2px
-    classDef stgBox fill:#3d2f0a,color:#aaa,stroke:#5a4410,stroke-width:2px
-    classDef prodBox fill:#c0392b,color:#fff,stroke:#8b2820,stroke-width:2px
-    classDef phase fill:#a8c8d8,color:#0f2538,stroke:#7ba8bd,stroke-width:1px,font-weight:bold
-    classDef stgPhase fill:#6b5a3a,color:#ccc,stroke:#5a4410,stroke-width:1px
+    classDef phase fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
+    classDef stgPhase fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:1px,font-weight:bold
+    classDef prodPhase fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:1px,font-weight:bold
 
-    class DEV devBox
-    class STG stgBox
-    class PROD prodBox
+    style DEV fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
+    style STG fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
+    style PROD fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
+
     class P,D,C,B,T phase
     class R stgPhase
-    class O,M phase
-    linkStyle default stroke:#999,stroke-width:2px
+    class O,M prodPhase
+    linkStyle default stroke:#9ca3af,stroke-width:2px
 ```
 
 </div>
@@ -372,17 +371,18 @@ flowchart LR
     end
     M ==> R ==> D
 
-    classDef ciBox fill:#1a3a52,color:#fff,stroke:#0f2538,stroke-width:2px
-    classDef ciStep fill:#a8c8d8,color:#0f2538,stroke:#7ba8bd,stroke-width:1px,font-weight:bold
-    classDef delBox fill:#8b2020,color:#fff,stroke:#5a1414,stroke-width:2px,font-weight:bold
-    classDef depBox fill:#c0392b,color:#fff,stroke:#8b2820,stroke-width:2px,font-weight:bold
+    classDef ciStep fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
+    classDef delStep fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:2px,font-weight:bold
+    classDef depStep fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:2px,font-weight:bold
 
-    class CI ciBox
+    style CI fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
+    style CDel fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
+    style CDep fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
+
     class B,T,M ciStep
-    class CDel,R delBox
-    class CDep,D depBox
-
-    linkStyle default stroke:#999,stroke-width:2px
+    class R delStep
+    class D depStep
+    linkStyle default stroke:#9ca3af,stroke-width:2px
 ```
 
 </div>
@@ -417,16 +417,18 @@ flowchart LR
     W ==> O
     M -.feedback.-> P
 
-    classDef devBox fill:#1a3a52,color:#fff,stroke:#0f2538,stroke-width:2px
-    classDef ciBox fill:#8b2020,color:#fff,stroke:#5a1414,stroke-width:2px
-    classDef prodBox fill:#c0392b,color:#fff,stroke:#8b2820,stroke-width:2px
-    classDef phase fill:#a8c8d8,color:#0f2538,stroke:#7ba8bd,stroke-width:1px,font-weight:bold
+    classDef phase fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
+    classDef manualPhase fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:1px,font-weight:bold
+    classDef prodPhase fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:1px,font-weight:bold
 
-    class DEV devBox
-    class MANUAL ciBox
-    class PROD prodBox
-    class P,D,C,B,W,O,M phase
-    linkStyle default stroke:#999,stroke-width:2px
+    style DEV fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
+    style MANUAL fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
+    style PROD fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
+
+    class P,D,C phase
+    class B,W manualPhase
+    class O,M prodPhase
+    linkStyle default stroke:#9ca3af,stroke-width:2px
 ```
 
 </div>
@@ -555,10 +557,10 @@ flowchart TB
     H --> S[(Supabase Postgres)]
     H --> R[(Cloudflare R2 bucket)]
 
-    classDef client fill:#2563eb,color:#fff,stroke:#1d4ed8
-    classDef worker fill:#f97316,color:#111827,stroke:#ea580c
-    classDef api fill:#10b981,color:#06281c,stroke:#059669
-    classDef data fill:#7c3aed,color:#fff,stroke:#6d28d9
+    classDef client fill:#2563eb,color:#ffffff,stroke:#1d4ed8,stroke-width:2px,font-weight:bold
+    classDef worker fill:#e66000,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
+    classDef api fill:#10b981,color:#ffffff,stroke:#047857,stroke-width:2px,font-weight:bold
+    classDef data fill:#7c3aed,color:#ffffff,stroke:#5b21b6,stroke-width:2px,font-weight:bold
 
     class U client
     class W,A worker
@@ -668,7 +670,7 @@ flowchart TB
     I --> L[Wrangler login]
     L --> D[Deploy React]
 
-    classDef step fill:#1f2937,color:#fff,stroke:#111827
+    classDef step fill:#1f2937,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
     class F,C,I,L,D step
 ```
 
@@ -680,7 +682,7 @@ flowchart TB
     H[Add Hono API] --> D[Connect Supabase]
     D --> R[Connect R2]
 
-    classDef step fill:#1f2937,color:#fff,stroke:#111827
+    classDef step fill:#1f2937,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
     class H,D,R step
 ```
 
@@ -1096,10 +1098,10 @@ flowchart TB
     B -->|POST /api/files| H
     H -->|Objects| R[(R2)]
 
-    classDef client fill:#2563eb,color:#fff,stroke:#1d4ed8
-    classDef worker fill:#f97316,color:#111827,stroke:#ea580c
-    classDef api fill:#10b981,color:#06281c,stroke:#059669
-    classDef data fill:#7c3aed,color:#fff,stroke:#6d28d9
+    classDef client fill:#2563eb,color:#ffffff,stroke:#1d4ed8,stroke-width:2px,font-weight:bold
+    classDef worker fill:#e66000,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
+    classDef api fill:#10b981,color:#ffffff,stroke:#047857,stroke-width:2px,font-weight:bold
+    classDef data fill:#7c3aed,color:#ffffff,stroke:#5b21b6,stroke-width:2px,font-weight:bold
 
     class B client
     class W,A worker
