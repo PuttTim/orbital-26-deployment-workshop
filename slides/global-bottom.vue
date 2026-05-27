@@ -1,6 +1,6 @@
 <template>
   <footer
-    v-if="!['cover', 'section', 'image', 'image-left', 'image-right', 'iframe'].includes($nav.currentLayout)"
+    v-if="!$frontmatter?.hideFooter && !String($frontmatter?.class ?? '').includes('live-terminal-slide') && !['cover', 'section', 'image', 'image-left', 'image-right', 'iframe'].includes($nav.currentLayout)"
     class="nus-footer"
   >
     <div>

@@ -478,6 +478,27 @@ html.dark .nus-logo-light {
 	font-size: 1.35rem;
 }
 
+.slidev-layout.live-terminal-slide {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	min-height: 0;
+	padding: 2.2rem 3.6rem 2.4rem;
+	overflow: hidden;
+}
+
+.slidev-layout.live-terminal-slide h1 {
+	flex: 0 0 auto;
+	margin-bottom: 0.5rem;
+	font-size: 2rem;
+	line-height: 1.1;
+}
+
+.slidev-layout.live-terminal-slide .live-terminal--full {
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
 .presenter-card {
 	display: flex;
 	width: 100%;
