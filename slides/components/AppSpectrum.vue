@@ -116,9 +116,6 @@ const apps: App[] = [
       <div class="text-base font-semibold">
         Needs a server running somewhere
       </div>
-      <div class="nus-token-faint mt-1 text-[0.74rem]">
-        This is what we're deploying today
-      </div>
     </div>
   </div>
 </template>
