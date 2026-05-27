@@ -268,20 +268,18 @@ layout: two-cols-header
 
 # Oops... what broke?
 
-
 Knight reused an old flag bit for a new trading feature.
 
 ::left::
 
-Previously, this bit was used to enable a "Power Peg" trading strategy.
+<v-clicks>
 
-When this bit was set, the server would "buy high and sell low" (not good investment advice btw).
+- That bit used to enable **Power Peg**: buy high, sell low
+- Deploy was manual; **one server** missed the update
+- Market opens → rogue server runs old logic at full speed
+- Rollback made it worse: **all servers** ran the old code
 
-Unfortunately, when they deployed the new feature manually, one of the servers missed the update.
-
-When markets opened, the old server began shredding money.
-
-So they tried to roll back all the servers, but that just made all the servers run the old code.
+</v-clicks>
 
 ::right::
 
@@ -289,15 +287,16 @@ So they tried to roll back all the servers, but that just made all the servers r
   <img src="/money-go-brrr.png" class="max-h-[48vh] w-full object-contain" />
 </div>
 
-Source: [YouTube:
-Dev Loses $440 Million in 28 minutes, Chaos Ensues
-](https://youtu.be/263CooDJZCY)
+Source: [YouTube: Dev Loses $440 Million in 28 minutes, Chaos Ensues](https://youtu.be/263CooDJZCY)
+
+<!--
+Presenter notes: Power Peg was a retired strategy. The "(not good investment advice)" joke lands well here if you want it verbally.
+-->
 
 
 
 
 ---
-class: compact
 ---
 
 # So why am I telling you this?
