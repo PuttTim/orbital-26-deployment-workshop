@@ -12,11 +12,13 @@ class: media-heavy compact
 ![Tien Cheng](../../public/presenters/tiencheng.jpg){class="h-[18rem] w-auto rounded object-cover"}
 
 - Y1 CS
-- NUS Hackers Coreteam Member
+- Coreteam, [NUS Hackers](https://www.nushackers.org/)
 
 ::right::
 
 ## Putt
 
+![Putt](../../public/presenters/putt.jpg){class="h-[18rem] w-auto rounded object-cover"}
+
 - Y1 BAIS
-- NUS Hackers Coreteam Member
+- Coreteam, [NUS Hackers](https://www.nushackers.org/)
