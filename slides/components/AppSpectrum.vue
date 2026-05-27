@@ -11,29 +11,29 @@ const apps: App[] = [
 	{
 		name: "Calculator",
 		logo: "/logos/Calculator_(iOS_26)_app_icon.png",
-		dotColor: "#10b981",
+		dotColor: "var(--nus-success)",
 	},
 	{
 		name: "Minecraft",
 		logo: "/logos/minecraft_bedrock_icon.svg",
-		dotColor: "#34d399",
+		dotColor: "color-mix(in srgb, var(--nus-success), var(--nus-warning) 20%)",
 		annotation: "Multiplayer needs a server",
 	},
 	{
 		name: "Spotify",
 		logo: "/logos/Spotify_App_Logo.svg",
-		dotColor: "#fbbf24",
+		dotColor: "var(--nus-warning)",
 		annotation: "Has an offline mode",
 	},
 	{
 		name: "Instagram",
 		logo: "/logos/Instagram_logo_2016.svg",
-		dotColor: "#fb923c",
+		dotColor: "var(--nus-accent)",
 	},
 	{
 		name: "Grab",
 		logo: "/logos/grab_app_icon.svg",
-		dotColor: "#ef4444",
+		dotColor: "var(--nus-danger)",
 	},
 ];
 </script>
@@ -42,7 +42,7 @@ const apps: App[] = [
   <div class="relative mx-auto mt-6 w-full max-w-[60rem] px-4 pt-6 pb-2 text-[0.9rem]">
     <div
       v-click="6"
-      class="needs-server-region pointer-events-none absolute -top-1 right-1 bottom-18 left-[40%] rounded-[14px] border border-black/10 transition-opacity duration-300 dark:border-white/5"
+      class="needs-server-region pointer-events-none absolute -top-1 right-1 bottom-18 left-[40%] rounded-[8px] border transition-opacity duration-300"
       aria-hidden="true"
     />
 
@@ -55,7 +55,7 @@ const apps: App[] = [
       >
         <div
           v-if="app.annotation"
-          class="absolute top-1 left-1/2 w-[88%] -translate-x-1/2 text-center text-[0.72rem] leading-snug text-black/65 italic dark:text-white/70"
+          class="nus-token-muted absolute top-1 left-1/2 w-[88%] -translate-x-1/2 text-center text-[0.72rem] leading-snug italic"
         >
           {{ app.annotation }}
         </div>
@@ -84,7 +84,7 @@ const apps: App[] = [
     <div class="relative z-1 mt-3 grid grid-cols-5 gap-2">
       <div class="col-start-1 flex flex-col items-center text-center">
         <div class="text-base font-semibold">Fully offline</div>
-        <div class="mt-1 text-[0.72rem] leading-snug text-black/55 dark:text-white/55">
+        <div class="nus-token-faint mt-1 text-[0.72rem] leading-snug">
           No server needed<br />
           Just distribute the app
         </div>
@@ -96,7 +96,7 @@ const apps: App[] = [
 
     <div
       v-click="6"
-      class="absolute right-1 -bottom-14 left-[40%] text-center text-red-500/80 transition-opacity duration-300 dark:text-red-400/75"
+      class="nus-token-danger absolute right-1 -bottom-14 left-[40%] text-center transition-opacity duration-300"
     >
       <svg
         class="mx-auto mb-2 block h-3 w-[92%]"
@@ -113,10 +113,10 @@ const apps: App[] = [
           stroke-linecap="round"
         />
       </svg>
-      <div class="text-base font-semibold text-red-500/95 dark:text-red-400/95">
+      <div class="text-base font-semibold">
         Needs a server running somewhere
       </div>
-      <div class="mt-1 text-[0.74rem] text-black/55 dark:text-white/55">
+      <div class="nus-token-faint mt-1 text-[0.74rem]">
         This is what we're deploying today
       </div>
     </div>
@@ -125,34 +125,35 @@ const apps: App[] = [
 
 <style scoped>
 .needs-server-region {
+  border-color: var(--nus-border);
   background: linear-gradient(
     180deg,
-    rgb(239 68 68 / 4%) 0%,
-    rgb(239 68 68 / 8%) 55%,
-    rgb(239 68 68 / 13%) 100%
+    color-mix(in srgb, var(--nus-danger), transparent 96%) 0%,
+    color-mix(in srgb, var(--nus-danger), transparent 92%) 55%,
+    color-mix(in srgb, var(--nus-danger), transparent 87%) 100%
   );
-  box-shadow: inset 0 -1px 0 rgb(239 68 68 / 22%);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--nus-danger), transparent 78%);
 }
 
 :global(.dark) .needs-server-region {
   background: linear-gradient(
     180deg,
-    rgb(239 68 68 / 2%) 0%,
-    rgb(239 68 68 / 6%) 55%,
-    rgb(239 68 68 / 11%) 100%
+    color-mix(in srgb, var(--nus-danger), transparent 98%) 0%,
+    color-mix(in srgb, var(--nus-danger), transparent 94%) 55%,
+    color-mix(in srgb, var(--nus-danger), transparent 89%) 100%
   );
-  box-shadow: inset 0 -1px 0 rgb(239 68 68 / 18%);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--nus-danger), transparent 82%);
 }
 
 .bar {
   background: linear-gradient(
     to right,
-    #10b981 0%,
-    #34d399 22%,
-    #fbbf24 48%,
-    #fb923c 72%,
-    #ef4444 90%,
-    #b91c1c 100%
+    var(--nus-success) 0%,
+    color-mix(in srgb, var(--nus-success), var(--nus-warning) 20%) 22%,
+    var(--nus-warning) 48%,
+    var(--nus-accent) 72%,
+    var(--nus-danger) 90%,
+    color-mix(in srgb, var(--nus-danger), #7f1d1d 35%) 100%
   );
 }
 

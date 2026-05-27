@@ -124,6 +124,7 @@ layout: section
 
 ---
 layout: two-cols-header
+class: diagram-heavy compact
 ---
 
 # The client-server model
@@ -134,7 +135,7 @@ Your app, the **client** (running on the user's device), talks to a **server** o
 
 ::left::
 
-```mermaid {scale: 0.65}
+```mermaid {scale: 0.56}
 architecture-beta
     group backend(cloud)[Cloud]
 
@@ -181,6 +182,7 @@ backgroundSize: contain
 We'll skip the staging environment in this workshop (and frankly, you probably don't need it for Orbital), but the tl;dr is: it's a copy of the production environment, minus the live users.
 
 ---
+class: diagram-heavy compact
 ---
 
 # How code gets to production
@@ -189,7 +191,7 @@ The **Software Development Lifecycle (SDLC)**
 
 <div class="flex justify-center mt-2">
 
-```mermaid {scale: 0.8}
+```mermaid {scale: 0.68}
 flowchart LR
     subgraph DEV["<b>DEV</b> (your machine)"]
         direction LR
@@ -223,7 +225,7 @@ flowchart LR
 
 </div>
 
-<v-clicks depth="2" class="mt-4 text-sm">
+<v-clicks depth="2" class="mt-3 text-sm">
 
 - **Dev**: your machine
   - **Plan & design**: decide what to build *(out of scope today)*
@@ -296,6 +298,7 @@ Dev Loses $440 Million in 28 minutes, Chaos Ensues
 
 
 ---
+class: compact
 ---
 
 # So why am I telling you this?
@@ -348,13 +351,14 @@ CI/CD is automation for the boring, repeatable parts of shipping.
 </div>
 
 ---
+class: diagram-heavy compact
 ---
 
 # CI/CD flow
 
 <div class="flex justify-center mt-6">
 
-```mermaid {scale: 0.82}
+```mermaid {scale: 0.7}
 flowchart LR
     subgraph CI["<b>CONTINUOUS INTEGRATION</b>"]
         direction LR
@@ -386,6 +390,7 @@ flowchart LR
 Common tools: GitHub Actions, GitLab CI, Jenkins.
 
 ---
+class: diagram-heavy compact
 ---
 
 # How CI/CD fits today
@@ -535,13 +540,14 @@ layout: two-cols-header
 </div>
 
 ---
+class: diagram-heavy compact
 ---
 
 # What we are building today
 
 <div class="flex justify-center mt-4">
 
-```mermaid {scale: 0.72}
+```mermaid {scale: 0.64}
 flowchart TB
     U[User browser] --> W[Cloudflare Worker]
     W --> A[React static assets]
@@ -647,6 +653,7 @@ You should have:
 Keep your `.env` files, `.dev.vars`, and API keys out of Git.
 
 ---
+class: diagram-heavy compact
 ---
 
 # Workshop route map
@@ -654,7 +661,7 @@ Keep your `.env` files, `.dev.vars`, and API keys out of Git.
 <div class="grid grid-cols-2 gap-4 mt-4">
 <div>
 
-```mermaid {scale: 0.58}
+```mermaid {scale: 0.52}
 flowchart TB
     F[Fork repo] --> C[Clone your fork]
     C --> I[Install deps]
@@ -668,7 +675,7 @@ flowchart TB
 </div>
 <div>
 
-```mermaid {scale: 0.58}
+```mermaid {scale: 0.52}
 flowchart TB
     H[Add Hono API] --> D[Connect Supabase]
     D --> R[Connect R2]
@@ -692,7 +699,7 @@ Each checkpoint should give you something you can open, call, or inspect.
 Start here:
 
 ```txt
-https://github.com/nushackers/orbital-26-deployment-workshop
+https://hckr.cc/orbital-deployment-26
 ```
 
 <div class="flex items-center gap-3 my-3">
@@ -1071,13 +1078,14 @@ Checkpoint:
 - Supabase can store the file key as metadata
 
 ---
+class: diagram-heavy compact
 ---
 
 # The final architecture
 
 <div class="flex justify-center mt-4">
 
-```mermaid {scale: 0.68}
+```mermaid {scale: 0.6}
 flowchart TB
     B[Browser] -->|Open URL| W[Cloudflare Worker]
     W -->|Serve| A[React assets]
