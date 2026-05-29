@@ -16,7 +16,6 @@ transition: view-transition
 comark: true
 duration: 120min
 ---
-<h1 style="view-transition-name: deck-title">End to End Deployment</h1>
 
 ---
 src: ./pages/part-1.md
