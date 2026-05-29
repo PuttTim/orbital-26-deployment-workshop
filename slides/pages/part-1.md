@@ -504,7 +504,7 @@ layout: two-cols-header
 
 ::right::
 
-![Containerisation](../public/docker-meme.webp)
+![Containerisation](/docker-meme.webp)
 
 ---
 layout: two-cols-header
@@ -521,7 +521,7 @@ layout: two-cols-header
 
 ::right::
 
-![Serverless](../public/serverless.webp)
+![Serverless](/serverless.webp)
 
 ---
 ---
@@ -826,209 +826,12 @@ layout: quote
 ---
 ---
 
-# Manual deploy works, but...
+# First deploy done
 
-- Today we ran `pnpm build` and `pnpm wrangler deploy` ourselves
-- That is useful because you can see what deployment does
-- In real projects, deployment should not depend on someone remembering commands
-- This is why CI/CD exists
-
----
-layout: two-cols-header
----
-
-# When deployment goes wrong
-
-Ever lost your company millions in a few minutes?
-
-::left::
-
-<div class="ml-6 pr-2 pb-12 pt-2">
-  <img src="/knight-capital-stock.webp" class="max-h-[48vh] w-full object-contain" />
-</div>
-
-
-::right::
-
-<div class="ml-6 pr-2 pb-12 pt-2">
-  <img src="/knight-capital.webp" class="max-h-[48vh] w-full object-contain" />
-</div>
-
-
-
----
-layout: two-cols-header
----
-
-# Oops... what broke?
-
-Knight reused an old flag bit for a new trading feature.
-
-::left::
-
-<v-clicks>
-
-- That bit used to enable **Power Peg**: buy high, sell low
-- Deploy was manual; **one server** missed the update
-- Market opens → rogue server runs old logic at full speed
-- Rollback made it worse: **all servers** ran the old code
-
-</v-clicks>
-
-::right::
-
-<div class="ml-6 pr-2 pb-12 pt-2">
-  <img src="/money-go-brrr.webp" class="max-h-[48vh] w-full object-contain" />
-</div>
-
-Source: [YouTube: Dev Loses $440 Million in 28 minutes, Chaos Ensues](https://youtu.be/263CooDJZCY)
-
-<!--
-Presenter notes: Power Peg was a retired strategy. The "(not good investment advice)" joke lands well here if you want it verbally.
--->
-
-
-
-
----
----
-
-# So why am I telling you this?
-
-- Deploying by hand works until it doesn't
-- You want the same build on every server, every time
-- That's what CI/CD automates
-- You probably won't lose $440M, but you can still ship broken code to real users
-
-
----
-layout: statement
----
-
-### By the way, if you're wondering what happened to the guy who messed up the deployment...
-
-He somehow didn't get fired ¯\\\_(ツ)_/¯
-
-<!--
-he didn't get fired; management did. bad process, not one bad engineer.
--->
-
----
----
-
-# CI/CD
-
-CI/CD is automation for the boring, repeatable parts of shipping.
-
-<div class="grid grid-cols-2 gap-8 mt-8">
-<div>
-
-## Continuous Integration
-
-- Runs on every push or pull request
-- Installs dependencies
-- Builds the app
-- Runs tests and checks
-- Blocks broken code from merging
-
-</div>
-<div>
-
-## Continuous Delivery or Deployment
-
-- Takes code that passed CI
-- Publishes it to an environment
-- Can deploy to staging first
-- Can deploy to production after approval or merge
-
-</div>
-</div>
-
----
-class: diagram-heavy compact
----
-
-# CI/CD flow
-
-<div class="flex justify-center mt-6">
-
-```mermaid {scale: 0.7}
-flowchart LR
-    subgraph CI["<b>CONTINUOUS INTEGRATION</b>"]
-        direction LR
-        B([BUILD]) --> T([TEST]) --> M([MERGE])
-    end
-    subgraph CDel["<b>CONTINUOUS DELIVERY</b>"]
-        R("AUTOMATICALLY<br/>RELEASE TO<br/>REPOSITORY")
-    end
-    subgraph CDep["<b>CONTINUOUS DEPLOYMENT</b>"]
-        D("AUTOMATICALLY<br/>DEPLOY TO<br/>PRODUCTION")
-    end
-    M ==> R ==> D
-
-    classDef ciStep fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
-    classDef delStep fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:2px,font-weight:bold
-    classDef depStep fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:2px,font-weight:bold
-
-    style CI fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
-    style CDel fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
-    style CDep fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
-
-    class B,T,M ciStep
-    class R delStep
-    class D depStep
-    linkStyle default stroke:#9ca3af,stroke-width:2px
-```
-
-</div>
-
-Common tools: GitHub Actions, GitLab CI, Jenkins.
-
----
-class: diagram-heavy compact
----
-
-# How CI/CD fits today
-
-Today, we will deploy manually so you understand what is happening.
-
-<div class="flex justify-center mt-4">
-
-```mermaid {scale: 0.68}
-flowchart LR
-    subgraph DEV["<b>DEV</b> (you)"]
-        direction LR
-        P([PLAN]) --> D([DESIGN]) --> C([CODE])
-    end
-    subgraph MANUAL["<b>TODAY</b> (manual deploy)"]
-        direction LR
-        B([BUILD]) --> W([WRANGLER DEPLOY])
-    end
-    subgraph PROD["<b>PROD</b> (live users)"]
-        direction LR
-        O([WORKER]) --> M([MONITOR])
-    end
-    C ==> B
-    W ==> O
-    M -.feedback.-> P
-
-    classDef phase fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
-    classDef manualPhase fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:1px,font-weight:bold
-    classDef prodPhase fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:1px,font-weight:bold
-
-    style DEV fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
-    style MANUAL fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
-    style PROD fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
-
-    class P,D,C phase
-    class B,W manualPhase
-    class O,M prodPhase
-    linkStyle default stroke:#9ca3af,stroke-width:2px
-```
-
-</div>
-
-Session 2 replaces the manual deploy step with GitHub Actions.
+- The React app is now on the public internet
+- Next, we make it a more realistic full-stack app
+- We will add an API, data, storage, and secrets
+- Then we will come back to what should be automated
 
 ---
 ---
@@ -1267,7 +1070,6 @@ The script generates SVG swatches for each color and uploads them. If the bucket
 The Worker uses the Supabase client to download files — no Wrangler binding needed.
 
 ---
----
 
 <CheckpointBadge />
 
@@ -1284,14 +1086,11 @@ app.get("/api/images/:key", async (c) => {
   const { data } = await supabase.storage
     .from("color-swipe-images")
     .download(`colors/${c.req.param("key")}`);
-
   if (!data) return c.notFound();
   return new Response(data);
 });
 ```
-
 Checkpoint:
-
 - Upload stores an object in Supabase Storage
 - The dashboard shows the object in the bucket
 - The GET route serves the file through the Worker
@@ -1305,7 +1104,7 @@ class: diagram-heavy compact
 
 <div class="flex justify-center mt-4">
 
-```mermaid {scale: 0.6}
+```mermaid {scale: 0.9}
 flowchart TB
     B[Browser] -->|Open URL| W[Cloudflare Worker]
     W -->|Serve| A[React assets]
@@ -1332,14 +1131,209 @@ flowchart TB
 ---
 ---
 
-# CI/CD reminder
+# Manual deploy works, but...
 
-We are doing the first deployment by hand today.
+- Today we ran `pnpm build` and `pnpm wrangler deploy` ourselves
+- That is useful because you can see what deployment does
+- In real projects, deployment should not depend on someone remembering commands
+- This is why CI/CD exists
 
-- You should still understand what CI/CD is
-- You should know which steps are being automated later
-- You should be able to read a deploy log without panicking
-- Session 2: GitHub Actions takes over the repeatable parts
+---
+layout: two-cols-header
+---
+
+# When deployment goes wrong
+
+Ever lost your company millions in a few minutes?
+
+::left::
+
+<div class="ml-6 pr-2 pb-12 pt-2">
+  <img src="/knight-capital-stock.webp" class="max-h-[48vh] w-full object-contain" />
+</div>
+
+
+::right::
+
+<div class="ml-6 pr-2 pb-12 pt-2">
+  <img src="/knight-capital.webp" class="max-h-[48vh] w-full object-contain" />
+</div>
+
+
+
+---
+layout: two-cols-header
+---
+
+# Oops... what broke?
+
+Knight reused an old flag bit for a new trading feature.
+
+::left::
+
+<v-clicks>
+
+- That bit used to enable **Power Peg**: buy high, sell low
+- Deploy was manual; **one server** missed the update
+- Market opens → rogue server runs old logic at full speed
+- Rollback made it worse: **all servers** ran the old code
+
+</v-clicks>
+
+::right::
+
+<div class="ml-6 pr-2 pb-12 pt-2">
+  <img src="/money-go-brrr.webp" class="max-h-[48vh] w-full object-contain" />
+</div>
+
+Source: [YouTube: Dev Loses $440 Million in 28 minutes, Chaos Ensues](https://youtu.be/263CooDJZCY)
+
+<!--
+Presenter notes: Power Peg was a retired strategy. The "(not good investment advice)" joke lands well here if you want it verbally.
+-->
+
+
+
+
+---
+---
+
+# So why am I telling you this?
+
+- Deploying by hand works until it doesn't
+- You want the same build on every server, every time
+- That's what CI/CD automates
+- You probably won't lose $440M, but you can still ship broken code to real users
+
+
+---
+layout: statement
+---
+
+### By the way, if you're wondering what happened to the guy who messed up the deployment...
+
+He somehow didn't get fired ¯\\\_(ツ)_/¯
+
+<!--
+he didn't get fired; management did. bad process, not one bad engineer.
+-->
+
+---
+---
+
+# CI/CD
+
+CI/CD is automation for the boring, repeatable parts of shipping.
+
+<div class="grid grid-cols-2 gap-8 mt-8">
+<div>
+
+## Continuous Integration
+
+- Runs on every push or pull request
+- Installs dependencies
+- Builds the app
+- Runs tests and checks
+- Blocks broken code from merging
+
+</div>
+<div>
+
+## Continuous Delivery or Deployment
+
+- Takes code that passed CI
+- Publishes it to an environment
+- Can deploy to staging first
+- Can deploy to production after approval or merge
+
+</div>
+</div>
+
+---
+class: diagram-heavy compact
+---
+
+# CI/CD flow
+
+<div class="flex justify-center mt-6">
+
+```mermaid {scale: 0.7}
+flowchart LR
+    subgraph CI["<b>CONTINUOUS INTEGRATION</b>"]
+        direction LR
+        B([BUILD]) --> T([TEST]) --> M([MERGE])
+    end
+    subgraph CDel["<b>CONTINUOUS DELIVERY</b>"]
+        R("AUTOMATICALLY<br/>RELEASE TO<br/>REPOSITORY")
+    end
+    subgraph CDep["<b>CONTINUOUS DEPLOYMENT</b>"]
+        D("AUTOMATICALLY<br/>DEPLOY TO<br/>PRODUCTION")
+    end
+    M ==> R ==> D
+
+    classDef ciStep fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
+    classDef delStep fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:2px,font-weight:bold
+    classDef depStep fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:2px,font-weight:bold
+
+    style CI fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
+    style CDel fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
+    style CDep fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
+
+    class B,T,M ciStep
+    class R delStep
+    class D depStep
+    linkStyle default stroke:#9ca3af,stroke-width:2px
+```
+
+</div>
+
+Common tools: GitHub Actions, GitLab CI, Jenkins.
+
+---
+class: diagram-heavy compact
+---
+
+# How CI/CD fits today
+
+Today, we deployed manually so you understand what is happening.
+
+<div class="flex justify-center mt-4">
+
+```mermaid {scale: 0.68}
+flowchart LR
+    subgraph DEV["<b>DEV</b> (you)"]
+        direction LR
+        P([PLAN]) --> D([DESIGN]) --> C([CODE])
+    end
+    subgraph MANUAL["<b>TODAY</b> (manual deploy)"]
+        direction LR
+        B([BUILD]) --> W([WRANGLER DEPLOY])
+    end
+    subgraph PROD["<b>PROD</b> (live users)"]
+        direction LR
+        O([WORKER]) --> M([MONITOR])
+    end
+    C ==> B
+    W ==> O
+    M -.feedback.-> P
+
+    classDef phase fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
+    classDef manualPhase fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:1px,font-weight:bold
+    classDef prodPhase fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:1px,font-weight:bold
+
+    style DEV fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
+    style MANUAL fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
+    style PROD fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
+
+    class P,D,C phase
+    class B,W manualPhase
+    class O,M prodPhase
+    linkStyle default stroke:#9ca3af,stroke-width:2px
+```
+
+</div>
+
+Next week, we'll replace the manual deploy step with GitHub Actions
 
 ---
 ---
