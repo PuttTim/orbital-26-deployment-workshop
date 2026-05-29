@@ -38,36 +38,9 @@
       <p class="loop-caption nus-token-faint">Both live on this laptop</p>
     </div>
 
-    <div v-click="3" class="url-section transition-opacity duration-300">
-      <p class="laptop-as-server-lead nus-token-muted">What the URL means:</p>
-
-      <div class="url-display">
-        <span class="url-protocol">http://</span>
-        <span class="url-host">localhost</span>
-        <span class="url-colon">:</span>
-        <span class="url-port">5173</span>
-      </div>
-
-      <p class="url-gloss">
-        <span class="url-gloss-host">localhost</span> = this machine ·
-        <span class="url-gloss-port">5173</span> = port ·
-        ask this computer for the app
-      </p>
-    </div>
-
-    <div v-click="4" class="etymology-section transition-opacity duration-300">
-      <p class="etymology-formula">
-        <code>localhost</code>
-        <span class="etymology-eq">=</span>
-        <code>local</code>
-        <span class="etymology-plus">+</span>
-        <code>host</code>
-      </p>
-
-      <p class="etymology-inline">
-        <span><strong>local</strong> — this machine</span>
-        <span class="etymology-sep" aria-hidden="true">·</span>
-        <span><strong>host</strong> — the machine serving something</span>
+    <div v-click="3" class="local-only-note transition-opacity duration-300">
+      <p>
+        This URL is local. It tells <strong>this laptop</strong> to ask one of its own programs for the app.
       </p>
     </div>
   </div>
@@ -79,7 +52,7 @@
   flex-direction: column;
   gap: 0.5rem;
   padding-top: 0;
-  padding-bottom: 2.75rem;
+  padding-bottom: 1rem;
   font-size: 0.8rem;
 }
 
@@ -255,105 +228,23 @@
   text-align: center;
 }
 
-.url-section {
-  margin-top: 0.05rem;
-}
-
-.url-display {
-  margin: 0.2rem 0 0.3rem;
-  font-size: 1.35em;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  word-break: break-all;
-}
-
-.url-protocol {
-  color: var(--nus-faint);
-  font-weight: 600;
-}
-
-.url-host {
-  color: var(--nus-accent-hi);
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--nus-accent), transparent 35%);
-  text-underline-offset: 0.12em;
-}
-
-.url-colon {
-  color: var(--nus-muted);
-}
-
-.url-port {
-  color: var(--nus-text);
-  border-bottom: 2px solid color-mix(in srgb, var(--nus-muted), transparent 50%);
-}
-
-.url-gloss {
+.local-only-note {
+  border-left: 0.18rem solid var(--nus-accent);
   margin: 0;
-  border-left: 0.25rem solid var(--nus-accent);
-  color: var(--nus-muted);
-  font-size: 0.95em;
-  font-weight: 600;
-  line-height: 1.35;
-  padding-left: 0.5rem;
-}
-
-.url-gloss-host {
-  color: var(--nus-accent-hi);
-  font-weight: 700;
-}
-
-.url-gloss-port {
+  background: color-mix(in srgb, var(--nus-accent) 10%, transparent);
   color: var(--nus-text);
-  font-weight: 700;
-}
-
-.etymology-section {
-  margin-top: 0;
-}
-
-.etymology-formula {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.2rem 0.3rem;
-  margin: 0 0 0.25rem;
-  color: var(--nus-muted);
-  font-size: 1em;
+  font-size: 0.88em;
   font-weight: 600;
+  line-height: 1.38;
+  padding: 0.45rem 0.55rem;
 }
 
-.etymology-formula code {
-  color: var(--nus-text);
-  font-size: 1.05em;
-  font-weight: 700;
+.local-only-note p {
+  margin: 0;
 }
 
-.etymology-eq,
-.etymology-plus {
+.local-only-note strong {
   color: var(--nus-accent-hi);
   font-weight: 800;
-}
-
-.etymology-inline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.25rem 0.4rem;
-  margin: 0;
-  color: var(--nus-muted);
-  font-size: 0.95em;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.etymology-inline strong {
-  color: var(--nus-text);
-  font-weight: 700;
-}
-
-.etymology-sep {
-  color: var(--nus-faint);
 }
 </style>

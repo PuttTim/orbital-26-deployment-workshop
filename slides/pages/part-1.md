@@ -22,37 +22,22 @@ layout: center
 class: text-center
 ---
 
-# What happens when you open a website?
+# So... you built something.
 
-<div class="grid grid-cols-2 gap-8 mt-8 text-left">
-<div>
+<img src="/localhost-meme.webp" class="mt-6 max-h-64 rounded-xl shadow-lg mx-auto" />
 
-## Browser
-
-- Asks for a URL
-- Receives HTML from a server
-- Loads CSS, JavaScript, images, and assets
-
-</div>
-<div>
-
-## App
-
-- Shows the page
-- Runs JavaScript in the browser
-- May call APIs for fresh data
-
-</div>
-</div>
-
-These slides are currently hosted this way too: built files served from a public host.
+<!--
+You drop the link in your team chat: `localhost:5173`
+Your teammate opens it and gets... nothing.
+Why? Because the app is running in a place only your computer understands.
+-->
 
 ---
 layout: two-cols-header
 class: compact media-heavy laptop-as-server-slide
 ---
 
-# Your laptop can be a server too
+# Why did the link fail?
 
 ::left::
 
@@ -60,19 +45,19 @@ class: compact media-heavy laptop-as-server-slide
 
 ::right::
 
-<div v-click="5" class="laptop-server-meme">
-  <img
-    src="/my-laptop-is-a-server.webp"
-    alt="Sticky note on a laptop that says: This is a server! DO NOT CLOSE LID!!"
-    class="w-[88%] max-w-[22rem] max-h-[38vh] object-cover object-center rounded-md border border-[var(--nus-border)] shadow-[var(--nus-shadow)]"
-  />
-  <p class="laptop-server-meme-caption nus-token-faint mt-2 text-center text-[0.72rem] italic">
-    Staging environment, circa 2012
-  </p>
-</div>
+## Your teammate opens it
+
+- Their `localhost` means **their laptop**
+- Nothing is listening on port `5173`
+- Your dev server is not on the public internet
+- So the link only works on your machine
 
 <!--
-Presenter notes: After click 4 (local + host), reveal the meme. "Yes, your laptop really is a server when you run pnpm dev."
+Optional verbal gloss:
+localhost = this machine
+5173 = which program on this machine
+So localhost:5173 means "ask this machine for the app on port 5173".
+Your teammate's machine asks itself, not yours.
 -->
 
 ---
@@ -81,6 +66,172 @@ Presenter notes: After click 4 (local + host), reveal the meme. "Yes, your lapto
 # How do most apps work?
 
 <AppSpectrum />
+
+---
+layout: two-cols-header
+class: compact diagram-heavy
+---
+
+# Deployment can mean distribution
+
+::left::
+
+<div class="mt-6 flex items-center justify-center gap-2 text-center">
+  <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-3 shadow-[var(--nus-shadow)]">
+    <img src="/logos/Calculator_(iOS_26)_app_icon.webp" alt="Calculator app icon" class="mx-auto h-14 w-14 rounded-[12px] object-contain" />
+    <div class="mt-2 text-sm font-semibold">Calculator app</div>
+    <div class="nus-token-faint mt-1 text-[0.68rem]">Logic runs on-device</div>
+  </div>
+  <div v-click class="nus-token-accent text-2xl font-bold">&rarr;</div>
+  <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-3 shadow-[var(--nus-shadow)]">
+    <div class="mx-auto grid h-14 w-14 place-items-center rounded-[12px] bg-[color-mix(in_srgb,var(--nus-accent),transparent_82%)] text-xl font-bold text-[var(--nus-accent)]">.apk</div>
+    <div class="mt-2 text-sm font-semibold">Build artifact</div>
+    <div class="nus-token-faint mt-1 text-[0.68rem]">Signed package</div>
+  </div>
+  <div v-click class="nus-token-accent text-2xl font-bold">&rarr;</div>
+  <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-3 shadow-[var(--nus-shadow)]">
+    <img src="/logos/play-store.webp" alt="Google Play Store logo" class="mx-auto h-14 w-14 rounded-[12px] object-contain" />
+    <div class="mt-2 text-sm font-semibold">Store install</div>
+    <div class="nus-token-faint mt-1 text-[0.68rem]">App Store, Play Store, direct</div>
+  </div>
+</div>
+
+::right::
+
+<v-clicks>
+
+## Fully offline
+
+- No API server
+- No database in the cloud
+- No process to keep running
+- Production is the version users have installed
+
+</v-clicks>
+
+<!--
+Deployment question:
+What file do users install, and how do updates reach them?
+-->
+
+---
+layout: two-cols-header
+class: compact diagram-heavy
+---
+
+# Deployment can mean hosting a world
+
+::left::
+
+<div class="mt-2 grid grid-cols-[1.05fr_auto_1.05fr_auto_1.1fr] items-center gap-2 text-center text-[0.66rem] leading-tight">
+  <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-2 shadow-[var(--nus-shadow)]">
+    <img src="/minecraft-launcher.webp" alt="Minecraft Launcher screenshot" class="h-20 w-full rounded-[6px] object-cover object-left-top" />
+    <div class="mt-1 font-semibold">Launcher</div>
+    <div class="nus-token-faint mt-0.5">Installs, updates, signs in</div>
+  </div>
+  <div v-click class="nus-token-accent text-xl font-bold">&rarr;</div>
+  <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-2 shadow-[var(--nus-shadow)]">
+    <img src="/minecraft-screenshot.webp" alt="Minecraft gameplay screenshot" class="h-20 w-full rounded-[6px] object-cover object-center" />
+    <div class="mt-1 font-semibold">Client</div>
+    <div class="nus-token-faint mt-0.5">Runs on player's device</div>
+  </div>
+  <div v-click class="nus-token-accent text-xl font-bold">&harr;</div>
+  <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-2 shadow-[var(--nus-shadow)]">
+    <img src="/minecraft-server-gui.webp" alt="Minecraft server GUI screenshot" class="h-20 w-full rounded-[6px] object-cover object-right-top" />
+    <div class="mt-1 font-semibold">Server</div>
+    <div class="nus-token-faint mt-0.5">Runs somewhere reachable</div>
+  </div>
+
+  <div v-click class="col-span-5 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+    <div class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] px-3 py-2 shadow-[var(--nus-shadow)]">
+      <div class="font-semibold text-[var(--nus-accent)]">Microsoft account</div>
+      <div class="nus-token-faint mt-0.5">Java Edition identity</div>
+    </div>
+    <div class="nus-token-muted text-lg">&rarr;</div>
+    <div class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] px-3 py-2 shadow-[var(--nus-shadow)]">
+      <div class="font-semibold text-[var(--nus-success)]">Online-mode check</div>
+      <div class="nus-token-faint mt-0.5">Server verifies players</div>
+    </div>
+  </div>
+
+  <div v-click class="col-span-5 rounded-[8px] border border-[var(--nus-border)] bg-[color-mix(in_srgb,var(--nus-warning),transparent_90%)] px-3 py-2 text-left shadow-[var(--nus-shadow)]">
+    <div class="font-semibold text-[var(--nus-warning)]">Deployed game server</div>
+    <div class="nus-token-faint mt-0.5">Owns the shared world state, for example blocks, mobs, inventories, and player positions.</div>
+  </div>
+</div>
+
+::right::
+
+<v-clicks>
+
+## Multiplayer changes the deployment
+
+- Single-player worlds can live on your device
+- Multiplayer needs a reachable server
+- Clients send actions and receive world updates
+- The server decides the shared truth
+
+</v-clicks>
+
+<!--
+Deployment question:
+Where is the server running, and can players reach it reliably?
+-->
+
+---
+layout: two-cols-header
+class: compact diagram-heavy
+---
+
+# Deployment can mean client plus cloud
+
+::left::
+
+<div class="mt-5 grid grid-cols-[1fr_auto_1.1fr] items-center gap-4 text-center text-[0.78rem]">
+  <div class="space-y-3">
+    <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-3 shadow-[var(--nus-shadow)]">
+      <img src="/logos/grab_app_icon.svg" alt="Grab app icon" class="mx-auto h-14 w-14 rounded-[10px] object-contain" />
+      <div class="mt-2 font-semibold">Mobile app</div>
+      <div class="nus-token-faint mt-1">Installed by users</div>
+    </div>
+    <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-3 shadow-[var(--nus-shadow)]">
+      <img src="/logos/Firefox_logo,_2019.svg" alt="Firefox logo" class="mx-auto h-14 w-14 rounded-[10px] object-contain" />
+      <div class="mt-2 font-semibold">Web app</div>
+      <div class="nus-token-faint mt-1">Loaded in browser</div>
+    </div>
+  </div>
+  <div v-click class="nus-token-accent text-3xl font-bold">&rarr;</div>
+  <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-3 shadow-[var(--nus-shadow)]">
+    <div class="mx-auto grid h-14 w-14 place-items-center rounded-[10px] bg-[color-mix(in_srgb,var(--nus-success),transparent_82%)] text-xl font-bold text-[var(--nus-success)]">API</div>
+    <div class="mt-2 text-base font-semibold">Backend services</div>
+    <div class="mt-3 grid grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] gap-2 text-[0.68rem]">
+      <div class="rounded-[8px] border border-[var(--nus-border)] px-1.5 py-1">Accounts</div>
+      <div class="rounded-[8px] border border-[var(--nus-border)] px-1.5 py-1">Bookings</div>
+      <div class="rounded-[8px] border border-[var(--nus-border)] px-1.5 py-1">Payments</div>
+      <div class="rounded-[8px] border border-[var(--nus-border)] px-1.5 py-1">Maps</div>
+      <div class="rounded-[8px] border border-[var(--nus-border)] px-1.5 py-1">Database</div>
+      <div class="rounded-[8px] border border-[var(--nus-border)] px-1.5 py-1">Notifications</div>
+    </div>
+  </div>
+</div>
+
+::right::
+
+<v-clicks>
+
+## Two things get shipped
+
+- The app store ships the mobile client
+- Web hosting ships the browser client
+- Backend deployment ships live data and behavior
+- You can update the backend without asking users to reinstall
+
+</v-clicks>
+
+<!--
+Deployment question:
+Which parts live on users' devices, and which parts run in the cloud?
+-->
 
 ---
 layout: two-cols-header
@@ -120,64 +271,6 @@ architecture-beta
 - **API server**: runs backend code, for example Hono, Express, FastAPI
 - **Database**: structured state, for example users, posts, events
 - **File storage**: blobs like images, PDFs, videos
-
----
-layout: center
-class: text-center
----
-
-## So, you've built your app.
-
-But it's stuck on your laptop.
-
-<img src="/localhost-meme.webp" class="mt-8 max-h-72 rounded-xl shadow-lg mx-auto" />
-
-
-
----
-layout: center
-class: text-center
----
-
-# The localhost problem
-
-When they open: `http://localhost:5173`<br>
-Their browser looks on **their** machine, not yours.
-
-<div class="flex justify-center mt-6">
-
-```mermaid {scale: 0.78}
-flowchart TB
-    subgraph THEM["<b>THEIR LAPTOP</b>"]
-        direction LR
-        TB(["Their browser"]) --> TL["localhost:5173<br/>nothing running"]
-    end
-
-    subgraph YOU["<b>YOUR LAPTOP</b>"]
-        direction LR
-        YB(["Your browser"]) --> YL["localhost:5173<br/>dev server running"]
-    end
-
-    TB -. "can't reach your localhost" .-> YL
-
-    classDef machine fill:#1f2937,color:#f3f4f6,stroke:#f8941d,stroke-width:2px
-    classDef browser fill:#2563eb,color:#ffffff,stroke:#1d4ed8,stroke-width:2px,font-weight:bold
-    classDef good fill:#10b981,color:#ffffff,stroke:#047857,stroke-width:2px,font-weight:bold
-    classDef bad fill:#dc2626,color:#ffffff,stroke:#991b1b,stroke-width:2px,font-weight:bold
-
-    style YOU fill:#1f2937,stroke:#f8941d,stroke-width:2px,color:#f3f4f6
-    style THEM fill:#1f2937,stroke:#f8941d,stroke-width:2px,color:#f3f4f6
-
-    class YB,TB browser
-    class YL good
-    class TL bad
-
-    linkStyle 1 stroke:#f8941d,stroke-width:2px,stroke-dasharray:6 4
-```
-
-</div>
-
-`localhost` always means "this computer."
 
 ---
 layout: two-cols-header
@@ -430,6 +523,45 @@ flowchart TB
 - Hono gives us a small API server
 - Supabase stores structured data
 - Supabase Storage stores image files
+
+We're shipping a web app today, but the Worker + API + Supabase pattern is exactly what a mobile app or game backend needs. Swap the React client for Flutter or Unity and the deployment story doesn't change.
+
+---
+---
+
+# What if you're building a mobile app or a game?
+
+<div class="grid grid-cols-3 gap-5 mt-6 text-[0.95rem]">
+<div>
+
+## The client changes
+
+- Browser tab
+- Mobile app
+- Game client
+
+</div>
+<div>
+
+## The deployed thing changes
+
+- Static files
+- App package
+- Game server
+- API backend
+
+</div>
+<div>
+
+## Today's pattern still helps
+
+- Cloudflare Worker for backend code
+- API routes for client requests
+- Supabase for data and files
+- Useful for web, mobile, and games
+
+</div>
+</div>
 
 ---
 layout: section
@@ -753,9 +885,11 @@ layout: statement
 
 ### By the way, if you're wondering what happened to the guy who messed up the deployment...
 
-<!-- he didn't get fired; management did. bad process, not one bad engineer. -->
+He somehow didn't get fired ¯\\\_(ツ)_/¯
 
-
+<!--
+he didn't get fired; management did. bad process, not one bad engineer.
+-->
 
 ---
 ---
