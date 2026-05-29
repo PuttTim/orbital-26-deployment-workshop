@@ -498,7 +498,7 @@ class: diagram-heavy compact
 
 <div class="flex justify-center mt-4">
 
-```mermaid {scale: 0.64}
+```mermaid {scale: 0.75}
 flowchart TB
     U[User browser] --> W[Cloudflare Worker]
     W --> A[React static assets]
@@ -519,49 +519,10 @@ flowchart TB
 
 </div>
 
-- React gives users the interface
+<!-- - React gives users the interface
 - Hono gives us a small API server
 - Supabase stores structured data
-- Supabase Storage stores image files
-
-We're shipping a web app today, but the Worker + API + Supabase pattern is exactly what a mobile app or game backend needs. Swap the React client for Flutter or Unity and the deployment story doesn't change.
-
----
----
-
-# What if you're building a mobile app or a game?
-
-<div class="grid grid-cols-3 gap-5 mt-6 text-[0.95rem]">
-<div>
-
-## The client changes
-
-- Browser tab
-- Mobile app
-- Game client
-
-</div>
-<div>
-
-## The deployed thing changes
-
-- Static files
-- App package
-- Game server
-- API backend
-
-</div>
-<div>
-
-## Today's pattern still helps
-
-- Cloudflare Worker for backend code
-- API routes for client requests
-- Supabase for data and files
-- Useful for web, mobile, and games
-
-</div>
-</div>
+- Supabase Storage stores image files -->
 
 ---
 layout: section
