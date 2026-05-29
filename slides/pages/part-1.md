@@ -411,7 +411,7 @@ flowchart TB
     W --> A[React static assets]
     W --> H[Hono API]
     H --> S[(Supabase Postgres)]
-    H --> R[(Cloudflare R2 bucket)]
+    H --> F[(Supabase Storage)]
 
     classDef client fill:#2563eb,color:#ffffff,stroke:#1d4ed8,stroke-width:2px,font-weight:bold
     classDef worker fill:#e66000,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
@@ -429,7 +429,7 @@ flowchart TB
 - React gives users the interface
 - Hono gives us a small API server
 - Supabase stores structured data
-- R2 stores uploaded files
+- Supabase Storage stores image files
 
 ---
 layout: section
@@ -452,7 +452,7 @@ We're not sponsored btw
 
 - Workers let us deploy backend code without managing a server
 - Workers can also serve our built React app
-- R2 gives us S3-like file storage
+- Supabase gives us Postgres + file storage in one platform
 - The free tiers are friendly for demos and student projects
 - You do not need to buy a domain today
 
@@ -489,7 +489,6 @@ Domains are optional:
 When we open Cloudflare, look for:
 
 - **Workers & Pages**: deployed apps and APIs
-- **R2 Object Storage**: buckets and uploaded files
 - **Account ID**: used by tooling and integrations
 - **Workers logs**: useful when production behaves differently
 - **Settings and billing**: check what plan you are on
@@ -538,7 +537,7 @@ flowchart TB
 ```mermaid {scale: 0.52}
 flowchart TB
     H[Add Hono API] --> D[Connect Supabase]
-    D --> R[Connect R2]
+    D --> R[Connect Supabase Storage]
 
     classDef step fill:#1f2937,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
     class H,D,R step
@@ -932,7 +931,7 @@ Create a project if you have not already. Today we only need:
 
 - Project URL
 - Publishable API key
-- One `items` table
+- One `colors` table
 - One Hono route that reads from it
 
 Keep deeper database design for later.
@@ -942,23 +941,25 @@ Keep deeper database design for later.
 
 <CheckpointBadge />
 
-# Create an `items` table
+# Create a `colors` table
 
-In the Supabase dashboard, open **SQL Editor** or **Table Editor**.
-
-SQL version:
+In the Supabase dashboard, open **SQL Editor**.
 
 ```sql
-create table public.items (
+create table public.colors (
   id uuid primary key default gen_random_uuid(),
   name text not null,
+  hex text not null,
+  image_key text,
+  upvotes integer default 0,
+  downvotes integer default 0,
   created_at timestamptz default now()
 );
 ```
 
 Checkpoint:
 
-- You see `items` in the dashboard
+- You see `colors` in the dashboard
 - You can explain what a row represents in your app
 
 ---
@@ -971,10 +972,10 @@ Supabase uses **Row Level Security**. New tables often have RLS enabled with no 
 For today only, add a permissive policy:
 
 ```sql
-alter table public.items enable row level security;
+alter table public.colors enable row level security;
 
 create policy "Workshop demo access"
-  on public.items
+  on public.colors
   for all
   to anon, authenticated
   using (true)
@@ -1036,18 +1037,18 @@ pnpm add @supabase/supabase-js
 ```ts
 import { createClient } from "@supabase/supabase-js";
 
-app.get("/api/items", async (c) => {
+app.get("/api/colors", async (c) => {
   const supabase = createClient(
     c.env.SUPABASE_URL,
     c.env.SUPABASE_KEY,
   );
-  const { data, error } = await supabase.from("items").select("*");
+  const { data, error } = await supabase.from("colors").select("*");
   if (error) return c.json({ error: error.message }, 500);
   return c.json(data);
 });
 ```
 
-Use the same client pattern for `POST /api/items`.
+Use the same client pattern for `POST /api/vote`.
 
 ---
 ---
@@ -1059,7 +1060,7 @@ Use the same client pattern for `POST /api/items`.
 Open in the browser:
 
 ```txt
-https://your-project.your-subdomain.workers.dev/api/items
+https://your-project.your-subdomain.workers.dev/api/colors
 ```
 
 Expected at first:
@@ -1074,7 +1075,8 @@ After you insert a row:
 [
   {
     "id": "...",
-    "name": "hello",
+    "name": "Sunset Orange",
+    "hex": "#FF6B35",
     "created_at": "..."
   }
 ]
@@ -1085,62 +1087,62 @@ If you get `[]` forever or a 500, check RLS policies first.
 ---
 ---
 
-# Add Cloudflare R2
+# Add Supabase Storage
 
-R2 is file storage for blobs:
+Supabase Storage is file storage for blobs:
 
 - Images
-- PDFs
-- Videos
+- Generated SVGs
 - User uploads
-- Generated files
 
-The database should store metadata. R2 should store the actual file bytes.
+The database stores metadata. Storage stores the actual file bytes.
 
 ---
 ---
 
-# Create and bind an R2 bucket
+# Create a storage bucket
 
-```bash
-pnpm wrangler r2 bucket create orbital-part-1-files
-```
+Go to **Supabase dashboard → Storage** and click **New Bucket**:
 
-Add the binding to `wrangler.jsonc`:
+- Name: `color-swipe-images`
+- Keep it **private**
 
-```jsonc
-{
-  "r2_buckets": [
-    {
-      "binding": "FILES",
-      "bucket_name": "orbital-part-1-files"
-    }
-  ]
-}
-```
+Then add a storage policy:
+1. Click the bucket → **Policies** tab
+2. Create policy: allow **SELECT** and **INSERT** for everyone
 
-The binding name is what your Worker code uses.
+The Worker uses the Supabase client to download files — no Wrangler binding needed.
 
 ---
 ---
 
 <CheckpointBadge />
 
-# R2 API shape
+# Storage API shape
 
-Use one small file route:
+Serve images through the Worker proxy:
 
-```txt
-POST /api/files
-GET /api/files/:key
+```ts
+app.get("/api/images/:key", async (c) => {
+  const supabase = createClient(
+    c.env.SUPABASE_URL,
+    c.env.SUPABASE_KEY,
+  );
+  const { data } = await supabase.storage
+    .from("color-swipe-images")
+    .download(`colors/${c.req.param("key")}`);
+
+  if (!data) return c.notFound();
+  return new Response(data);
+});
 ```
 
 Checkpoint:
 
-- Upload stores an object in R2
+- Upload stores an object in Supabase Storage
 - The dashboard shows the object in the bucket
-- The GET route returns or redirects to the file
-- Supabase can store the file key as metadata
+- The GET route serves the file through the Worker
+- The `image_key` column stores the filename
 
 ---
 class: diagram-heavy compact
@@ -1156,10 +1158,10 @@ flowchart TB
     W -->|Serve| A[React assets]
     B -->|GET /api/health| H[Hono API]
     H -->|JSON| B
-    B -->|POST /api/items| H
+    B -->|POST /api/vote| H
     H -->|Rows| S[(Supabase)]
-    B -->|POST /api/files| H
-    H -->|Objects| R[(R2)]
+    B -->|GET /api/images| H
+    H -->|Files| F[(Supabase Storage)]
 
     classDef client fill:#2563eb,color:#ffffff,stroke:#1d4ed8,stroke-width:2px,font-weight:bold
     classDef worker fill:#e66000,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
@@ -1169,7 +1171,7 @@ flowchart TB
     class B client
     class W,A worker
     class H api
-    class S,R data
+    class S,F data
 ```
 
 </div>
@@ -1196,9 +1198,9 @@ By the end, you should have:
 - A public `workers.dev` URL
 - A React app served by Cloudflare Workers
 - `GET /api/health` returning JSON
-- `GET /api/items` returning rows from Supabase
-- An R2 bucket bound to the Worker
-- At least one file stored through the app or API
+- `GET /api/colors` returning rows from Supabase
+- A Supabase Storage bucket serving images
+- At least one image stored and served through the API
 
 ---
 ---
