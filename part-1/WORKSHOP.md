@@ -1,4 +1,4 @@
-# Color Swipe — Workshop Flow
+# Color Swipe: Workshop Flow
 
 ## Prerequisites
 
@@ -9,7 +9,7 @@
 
 ---
 
-## Step 1 — Run locally
+## Step 1: Run locally
 
 ```bash
 cd part-1
@@ -17,11 +17,11 @@ pnpm install
 pnpm dev
 ```
 
-**What you see:** An empty state — "No colors found. Set up Supabase and run `pnpm migrate`." No cards yet because there's no data.
+You'll see an empty state: "No colors found. Set up Supabase and run `pnpm migrate`." No cards yet; there's no data.
 
 ---
 
-## Step 2 — Deploy to Cloudflare
+## Step 2: Deploy to Cloudflare
 
 ```bash
 pnpm wrangler login
@@ -29,7 +29,7 @@ pnpm wrangler whoami
 pnpm deploy
 ```
 
-**What you get:** A `workers.dev` URL. Open it — same empty state. The app is live on the internet.
+You'll get a `workers.dev` URL. Open it: same empty state, now live on the internet.
 
 **Check the API is live:**
 
@@ -39,11 +39,11 @@ https://your-project.your-subdomain.workers.dev/api/health
 
 Returns `{ "ok": true, "service": "color-swipe" }`.
 
-`/api/colors` returns `[]` — no database yet.
+`/api/colors` returns `[]` (no database yet).
 
 ---
 
-## Step 3 — Add Supabase (database)
+## Step 3: Add Supabase (database)
 
 ### 3a. Get your Supabase keys
 
@@ -66,7 +66,7 @@ cp .dev.vars.example .dev.vars
 pnpm migrate
 ```
 
-The first time, it prints the SQL + a link to your project's SQL Editor. Copy the SQL, paste into the editor, click **Run**, then re-run `pnpm migrate`. It seeds 20 colors.
+On first run, it prints the SQL and a link to your project's SQL Editor. Copy the SQL, paste it into the editor, click **Run**, then re-run `pnpm migrate`. This seeds 20 colors.
 
 ### 3c. Set secrets and redeploy
 
@@ -76,11 +76,11 @@ pnpm wrangler secret put SUPABASE_KEY
 pnpm deploy
 ```
 
-**What changes:** Cards appear with the color name and hex code on a white background. The visual color is NOT rendered — that comes from Supabase Storage next. Swiping sends real votes to Supabase.
+Cards now appear with the color name and hex code on a white background. The visual color is NOT rendered yet; that comes from Supabase Storage in the next step. Swiping sends real votes to Supabase.
 
 ---
 
-## Step 4 — Add Supabase Storage (images)
+## Step 4: Add Supabase Storage (images)
 
 ### 4a. Create the storage bucket and policy
 
@@ -98,7 +98,7 @@ Then add a storage policy:
 pnpm seed-images
 ```
 
-Generates SVG swatches for each color and uploads to the `color-swipe-images` bucket via the Supabase client. Stores the filename in `image_key`. Images are served through the Worker proxy at `/api/images/:key`.
+This generates an SVG swatch for each color, uploads them to the `color-swipe-images` bucket, and stores each filename in `image_key`. Images are served through the Worker proxy at `/api/images/:key`.
 
 ### 4c. Redeploy
 
@@ -106,7 +106,7 @@ Generates SVG swatches for each color and uploads to the `color-swipe-images` bu
 pnpm deploy
 ```
 
-**What changes:** Cards now show colored SVG images served from Supabase Storage. The app's color visuals always come from storage, never from CSS.
+Cards now show colored SVG images served from Supabase Storage. Color visuals always come from storage, not CSS.
 
 ---
 
@@ -114,7 +114,7 @@ pnpm deploy
 
 | Command | What it does | Needs |
 |---|---|---|
-| `pnpm dev` | Start Vite dev server | — |
+| `pnpm dev` | Start Vite dev server | - |
 | `pnpm deploy` | Build + deploy to Workers | wrangler logged in |
 | `pnpm migrate` | Create table + seed 20 colors | `.dev.vars` with Supabase creds |
 | `pnpm seed-images` | Generate SVGs + upload to Supabase Storage | `.dev.vars` + storage bucket |
