@@ -943,33 +943,22 @@ Keep deeper database design for later.
 
 # Create a `colors` table
 
-In the Supabase dashboard, open **SQL Editor**.
+The app includes a migration script that guides you through it:
 
-```sql
-create table public.colors (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  hex text not null,
-  image_key text,
-  upvotes integer default 0,
-  downvotes integer default 0,
-  created_at timestamptz default now()
-);
+```bash
+pnpm migrate
 ```
 
-Checkpoint:
+It prints the SQL + a link to your project's SQL Editor. Copy the SQL, paste into the editor, click **Run**, then re-run `pnpm migrate`. It seeds 20 colors.
 
-- You see `colors` in the dashboard
-- You can explain what a row represents in your app
+If PostgREST hasn't reloaded yet, the script tells you what to do next.
 
 ---
 ---
 
 # Turn on RLS for the demo
 
-Supabase uses **Row Level Security**. New tables often have RLS enabled with no policies yet. When that happens, reads return zero rows, and writes are denied with an error.
-
-For today only, add a permissive policy:
+The migration script handles this for you, but here's what it does behind the scenes:
 
 ```sql
 alter table public.colors enable row level security;
@@ -984,7 +973,7 @@ create policy "Workshop demo access"
 
 Real projects would not use `using (true)` in production.
 
-If queries still fail, check **Authentication → Policies** first.
+If queries fail even after migrating, check **Authentication → Policies** in Supabase.
 
 ---
 ---
@@ -1110,6 +1099,14 @@ Go to **Supabase dashboard → Storage** and click **New Bucket**:
 Then add a storage policy:
 1. Click the bucket → **Policies** tab
 2. Create policy: allow **SELECT** and **INSERT** for everyone
+
+Then generate and upload the images:
+
+```bash
+pnpm seed-images
+```
+
+The script generates SVG swatches for each color and uploads them. If the bucket is missing or needs a policy, it tells you exactly what to do.
 
 The Worker uses the Supabase client to download files — no Wrangler binding needed.
 
