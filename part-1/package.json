@@ -8,7 +8,7 @@
     "preview": "vite preview",
     "deploy": "pnpm build && wrangler deploy",
     "migrate": "tsx scripts/migrate.ts",
-    "seed-r2": "tsx scripts/seed-r2.ts"
+    "seed-images": "tsx scripts/seed-images.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.8",

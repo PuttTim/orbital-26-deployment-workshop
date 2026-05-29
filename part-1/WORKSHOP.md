@@ -76,47 +76,37 @@ pnpm wrangler secret put SUPABASE_KEY
 pnpm deploy
 ```
 
-**What changes:** Cards appear with the color name and hex code on a white background. The visual color is NOT rendered — that comes from R2 next. Swiping sends real votes to Supabase.
+**What changes:** Cards appear with the color name and hex code on a white background. The visual color is NOT rendered — that comes from Supabase Storage next. Swiping sends real votes to Supabase.
 
 ---
 
-## Step 4 — Add R2 (file storage)
+## Step 4 — Add Supabase Storage (images)
 
-### 4a. Create the bucket
+### 4a. Create the storage bucket and policy
 
-```bash
-pnpm wrangler r2 bucket create color-swipe-images
-```
+Go to **Supabase dashboard → Storage** and click **New Bucket**:
+- Name: `color-swipe-images`
+- Keep it **private**
 
-### 4b. Add R2 binding to `wrangler.jsonc`
+Then add a storage policy:
+1. Click the bucket → **Policies** tab
+2. Create policy: allow **SELECT** and **INSERT** for everyone
 
-```jsonc
-{
-  // ... existing config ...
-  "r2_buckets": [
-    {
-      "binding": "FILES",
-      "bucket_name": "color-swipe-images"
-    }
-  ]
-}
-```
-
-### 4c. Generate images and upload
+### 4b. Generate images and upload
 
 ```bash
-pnpm seed-r2
+pnpm seed-images
 ```
 
-Reads colors from Supabase, generates SVGs locally, uploads to the R2 bucket using `pnpm wrangler r2 object put`, then updates the `image_key` in Supabase.
+Generates SVG swatches for each color and uploads to the `color-swipe-images` bucket via the Supabase client. Stores the filename in `image_key`. Images are served through the Worker proxy at `/api/images/:key`.
 
-### 4d. Redeploy
+### 4c. Redeploy
 
 ```bash
 pnpm deploy
 ```
 
-**What changes:** Cards now show colored SVG images served from R2. The app's color visuals always come from R2, never from CSS.
+**What changes:** Cards now show colored SVG images served from Supabase Storage. The app's color visuals always come from storage, never from CSS.
 
 ---
 
@@ -127,6 +117,6 @@ pnpm deploy
 | `pnpm dev` | Start Vite dev server | — |
 | `pnpm deploy` | Build + deploy to Workers | wrangler logged in |
 | `pnpm migrate` | Create table + seed 20 colors | `.dev.vars` with Supabase creds |
-| `pnpm seed-r2` | Generate SVGs + upload to R2 | `.dev.vars` + R2 bucket exists |
+| `pnpm seed-images` | Generate SVGs + upload to Supabase Storage | `.dev.vars` + storage bucket |
 
 All scripts read credentials from `.dev.vars` automatically.
