@@ -62,7 +62,7 @@ class: compact media-heavy laptop-as-server-slide
 
 <div v-click="5" class="laptop-server-meme">
   <img
-    src="/my-laptop-is-a-server.jpeg"
+    src="/my-laptop-is-a-server.webp"
     alt="Sticky note on a laptop that says: This is a server! DO NOT CLOSE LID!!"
     class="w-[88%] max-w-[22rem] max-h-[38vh] object-cover object-center rounded-md border border-[var(--nus-border)] shadow-[var(--nus-shadow)]"
   />
@@ -130,7 +130,7 @@ class: text-center
 
 But it's stuck on your laptop.
 
-<img src="/localhost-meme.png" class="mt-8 max-h-72 rounded-xl shadow-lg mx-auto" />
+<img src="/localhost-meme.webp" class="mt-8 max-h-72 rounded-xl shadow-lg mx-auto" />
 
 
 
@@ -221,7 +221,7 @@ layout: section
 
 ---
 layout: image
-image: /the-cloud.png
+image: /the-cloud.webp
 backgroundSize: contain
 ---
 
@@ -350,7 +350,7 @@ layout: two-cols-header
 
 ::right::
 
-![Containerisation](../public/docker-meme.jpg)
+![Containerisation](../public/docker-meme.webp)
 
 ---
 layout: two-cols-header
@@ -367,7 +367,7 @@ layout: two-cols-header
 
 ::right::
 
-![Serverless](../public/serverless.jpeg)
+![Serverless](../public/serverless.webp)
 
 ---
 ---
@@ -690,7 +690,7 @@ Ever lost your company millions in a few minutes?
 ::left::
 
 <div class="ml-6 pr-2 pb-12 pt-2">
-  <img src="/knight-capital-stock.jpg" class="max-h-[48vh] w-full object-contain" />
+  <img src="/knight-capital-stock.webp" class="max-h-[48vh] w-full object-contain" />
 </div>
 
 
@@ -724,7 +724,7 @@ Knight reused an old flag bit for a new trading feature.
 ::right::
 
 <div class="ml-6 pr-2 pb-12 pt-2">
-  <img src="/money-go-brrr.png" class="max-h-[48vh] w-full object-contain" />
+  <img src="/money-go-brrr.webp" class="max-h-[48vh] w-full object-contain" />
 </div>
 
 Source: [YouTube: Dev Loses $440 Million in 28 minutes, Chaos Ensues](https://youtu.be/263CooDJZCY)
@@ -1012,7 +1012,7 @@ pnpm wrangler secret put SUPABASE_KEY
 
 Please don't commit real secrets.
 
-<img src="/api-key-meme.jpeg" class="h-48 w-full object-contain" />
+<img src="/api-key-meme.webp" class="h-48 w-full object-contain" />
 
 ---
 ---
@@ -1228,6 +1228,6 @@ class: text-center
 
 Thanks for joining us today. Your feedback helps us improve future sessions.
 
-<img src="/qr/orb26-deployment-p1-feedback-qr-code.png" alt="Feedback QR code" class="mt-6 mb-10 max-h-56 rounded-xl shadow-lg mx-auto" />
+<img src="/qr/orb26-deployment-p1-feedback-qr-code.webp" alt="Feedback QR code" class="mt-6 mb-10 max-h-56 rounded-xl shadow-lg mx-auto" />
 
 [https://hckr.cc/orb26-deployment-p1-feedback](https://hckr.cc/orb26-deployment-p1-feedback)

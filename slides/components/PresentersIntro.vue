@@ -2,7 +2,7 @@
 const tienCheng = {
 	index: "01",
 	name: "Tien Cheng",
-	photo: "/presenters/tiencheng.jpg",
+	photo: "/presenters/tiencheng.webp",
 	program: "Y1 CS",
 	affiliationUrl: "https://www.nushackers.org/",
 	photoPosition: "center 28%",
@@ -11,7 +11,7 @@ const tienCheng = {
 const putt = {
 	index: "02",
 	name: "Putt",
-	photo: "/presenters/putt.jpg",
+	photo: "/presenters/putt.webp",
 	program: "Y1 BAIS",
 	affiliationUrl: "https://www.nushackers.org/",
 	photoPosition: "center 32%",

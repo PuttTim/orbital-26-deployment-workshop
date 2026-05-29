@@ -10,7 +10,7 @@ interface App {
 const apps: App[] = [
 	{
 		name: "Calculator",
-		logo: "/logos/Calculator_(iOS_26)_app_icon.png",
+		logo: "/logos/Calculator_(iOS_26)_app_icon.webp",
 		dotColor: "var(--nus-success)",
 	},
 	{
