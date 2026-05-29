@@ -22,6 +22,110 @@ layout: center
 class: text-center
 ---
 
+# What happens when you open a website?
+
+<div class="grid grid-cols-2 gap-8 mt-8 text-left">
+<div>
+
+## Browser
+
+- Asks for a URL
+- Receives HTML from a server
+- Loads CSS, JavaScript, images, and assets
+
+</div>
+<div>
+
+## App
+
+- Shows the page
+- Runs JavaScript in the browser
+- May call APIs for fresh data
+
+</div>
+</div>
+
+These slides are currently hosted this way too: built files served from a public host.
+
+---
+layout: two-cols-header
+class: compact media-heavy laptop-as-server-slide
+---
+
+# Your laptop can be a server too
+
+::left::
+
+<LaptopAsServer />
+
+::right::
+
+<div v-click="5" class="laptop-server-meme">
+  <img
+    src="/my-laptop-is-a-server.jpeg"
+    alt="Sticky note on a laptop that says: This is a server! DO NOT CLOSE LID!!"
+    class="w-[88%] max-w-[22rem] max-h-[38vh] object-cover object-center rounded-md border border-[var(--nus-border)] shadow-[var(--nus-shadow)]"
+  />
+  <p class="laptop-server-meme-caption nus-token-faint mt-2 text-center text-[0.72rem] italic">
+    Staging environment, circa 2012
+  </p>
+</div>
+
+<!--
+Presenter notes: After click 4 (local + host), reveal the meme. "Yes, your laptop really is a server when you run pnpm dev."
+-->
+
+---
+---
+
+# How do most apps work?
+
+<AppSpectrum />
+
+---
+layout: two-cols-header
+class: diagram-heavy compact
+---
+
+# The client-server model
+
+Most apps work like this:
+
+Your app, the **client** (running on the user's device), talks to a **server** over the internet.
+
+::left::
+
+```mermaid {scale: 0.56}
+architecture-beta
+    group backend(cloud)[Cloud]
+
+    service web(internet)[Web App]
+    service mobile(internet)[Mobile App]
+    service net(cloud)[Internet]
+    service api(server)[API Server] in backend
+    service db(database)[Database] in backend
+    service storage(disk)[File Storage] in backend
+
+    web:B -- T:net
+    mobile:T -- B:net
+    net:R -- L:api
+    api:R -- L:db
+    api:B -- T:storage
+```
+
+::right::
+
+- **Client**: the browser tab or mobile/desktop app the user sees
+- **Internet**: how the client reaches your server
+- **API server**: runs backend code, for example Hono, Express, FastAPI
+- **Database**: structured state, for example users, posts, events
+- **File storage**: blobs like images, PDFs, videos
+
+---
+layout: center
+class: text-center
+---
+
 ## So, you've built your app.
 
 But it's stuck on your laptop.
@@ -37,7 +141,7 @@ class: text-center
 
 # The localhost problem
 
-When they open: `http://localhost:5173`  
+When they open: `http://localhost:5173`<br>
 Their browser looks on **their** machine, not yours.
 
 <div class="flex justify-center mt-6">
@@ -100,7 +204,7 @@ But... you can't expect everyone to have your laptop.
 
 ## Production
 
-Our ultimate goal is to deploy to a production environment. 
+Our ultimate goal is to deploy to a production environment.
 
 A production environment:
 
@@ -114,52 +218,6 @@ layout: section
 ---
 
 ## What does it mean to deploy to production?
-
----
----
-
-# How do most apps work?
-
-<AppSpectrum />
-
----
-layout: two-cols-header
-class: diagram-heavy compact
----
-
-# The client-server model
-
-Most apps work like this:
-
-Your app, the **client** (running on the user's device), talks to a **server** over the internet.
-
-::left::
-
-```mermaid {scale: 0.56}
-architecture-beta
-    group backend(cloud)[Cloud]
-
-    service web(internet)[Web App]
-    service mobile(internet)[Mobile App]
-    service net(cloud)[Internet]
-    service api(server)[API Server] in backend
-    service db(database)[Database] in backend
-    service storage(disk)[File Storage] in backend
-
-    web:B -- T:net
-    mobile:T -- B:net
-    net:R -- L:api
-    api:R -- L:db
-    api:B -- T:storage
-```
-
-::right::
-
-- **Client**: the browser tab or mobile/desktop app the user sees
-- **Internet**: how the client reaches your server
-- **API server**: runs backend code, for example Hono, Express, FastAPI
-- **Database**: structured state, for example users, posts, events
-- **File storage**: blobs like images, PDFs, videos
 
 ---
 layout: image
@@ -185,9 +243,9 @@ We'll skip the staging environment in this workshop (and frankly, you probably d
 class: diagram-heavy compact
 ---
 
-# How code gets to production
+# Where deployment fits
 
-The **Software Development Lifecycle (SDLC)**
+From your laptop to production
 
 <div class="flex justify-center mt-2">
 
@@ -224,215 +282,14 @@ flowchart LR
 
 </div>
 
-<v-clicks depth="2" class="mt-3 text-sm">
+<v-clicks class="mt-3 text-sm">
 
-- **Dev**: your machine
-  - **Plan & design**: decide what to build *(out of scope today)*
-  - **Code, build, test**: write the app, compile it, try it
-- **Staging**: replica server 
-  - **Release**: one last check before real users see it
-- **Production**: live users
-  - **Deploy**: push your build to a public URL
-  - **Monitor**: watch logs and errors after users hit it
-- **Feedback loop**: what breaks in production feeds the next plan
+- Today we zoom into **build → deploy**
+- Session 2 automates that path with **CI/CD**
+- **Plan** and **design** are real work, but out of scope today
+- **Staging** is useful, but optional for this workshop
 
 </v-clicks>
-
-
----
-layout: two-cols-header
----
-
-# When deployment goes wrong
-
-Ever lost your company millions in a few minutes?
-
-::left::
-
-<div class="ml-6 pr-2 pb-12 pt-2">
-  <img src="/knight-capital-stock.jpg" class="max-h-[48vh] w-full object-contain" />
-</div>
-
-
-::right::
-
-<div class="ml-6 pr-2 pb-12 pt-2">
-  <img src="/knight-capital.webp" class="max-h-[48vh] w-full object-contain" />
-</div>
-
-
-
----
-layout: two-cols-header
----
-
-# Oops... what broke?
-
-Knight reused an old flag bit for a new trading feature.
-
-::left::
-
-<v-clicks>
-
-- That bit used to enable **Power Peg**: buy high, sell low
-- Deploy was manual; **one server** missed the update
-- Market opens → rogue server runs old logic at full speed
-- Rollback made it worse: **all servers** ran the old code
-
-</v-clicks>
-
-::right::
-
-<div class="ml-6 pr-2 pb-12 pt-2">
-  <img src="/money-go-brrr.png" class="max-h-[48vh] w-full object-contain" />
-</div>
-
-Source: [YouTube: Dev Loses $440 Million in 28 minutes, Chaos Ensues](https://youtu.be/263CooDJZCY)
-
-<!--
-Presenter notes: Power Peg was a retired strategy. The "(not good investment advice)" joke lands well here if you want it verbally.
--->
-
-
-
-
----
----
-
-# So why am I telling you this?
-
-- Deploying by hand works until it doesn't
-- You want the same build on every server, every time
-- That's what CI/CD automates
-- You probably won't lose $440M, but you can still ship broken code to real users
-
-
----
-layout: statement
----
-
-### By the way, if you're wondering what happened to the guy who messed up the deployment...
-
-<!-- he didn't get fired; management did. bad process, not one bad engineer. -->
-
-
-
----
----
-
-# CI/CD
-
-CI/CD is automation for the boring, repeatable parts of shipping.
-
-<div class="grid grid-cols-2 gap-8 mt-8">
-<div>
-
-## Continuous Integration
-
-- Runs on every push or pull request
-- Installs dependencies
-- Builds the app
-- Runs tests and checks
-- Blocks broken code from merging
-
-</div>
-<div>
-
-## Continuous Delivery or Deployment
-
-- Takes code that passed CI
-- Publishes it to an environment
-- Can deploy to staging first
-- Can deploy to production after approval or merge
-
-</div>
-</div>
-
----
-class: diagram-heavy compact
----
-
-# CI/CD flow
-
-<div class="flex justify-center mt-6">
-
-```mermaid {scale: 0.7}
-flowchart LR
-    subgraph CI["<b>CONTINUOUS INTEGRATION</b>"]
-        direction LR
-        B([BUILD]) --> T([TEST]) --> M([MERGE])
-    end
-    subgraph CDel["<b>CONTINUOUS DELIVERY</b>"]
-        R("AUTOMATICALLY<br/>RELEASE TO<br/>REPOSITORY")
-    end
-    subgraph CDep["<b>CONTINUOUS DEPLOYMENT</b>"]
-        D("AUTOMATICALLY<br/>DEPLOY TO<br/>PRODUCTION")
-    end
-    M ==> R ==> D
-
-    classDef ciStep fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
-    classDef delStep fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:2px,font-weight:bold
-    classDef depStep fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:2px,font-weight:bold
-
-    style CI fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
-    style CDel fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
-    style CDep fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
-
-    class B,T,M ciStep
-    class R delStep
-    class D depStep
-    linkStyle default stroke:#9ca3af,stroke-width:2px
-```
-
-</div>
-
-Common tools: GitHub Actions, GitLab CI, Jenkins.
-
----
-class: diagram-heavy compact
----
-
-# How CI/CD fits today
-
-Today, we will deploy manually so you understand what is happening.
-
-<div class="flex justify-center mt-4">
-
-```mermaid {scale: 0.68}
-flowchart LR
-    subgraph DEV["<b>DEV</b> (you)"]
-        direction LR
-        P([PLAN]) --> D([DESIGN]) --> C([CODE])
-    end
-    subgraph MANUAL["<b>TODAY</b> (manual deploy)"]
-        direction LR
-        B([BUILD]) --> W([WRANGLER DEPLOY])
-    end
-    subgraph PROD["<b>PROD</b> (live users)"]
-        direction LR
-        O([WORKER]) --> M([MONITOR])
-    end
-    C ==> B
-    W ==> O
-    M -.feedback.-> P
-
-    classDef phase fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
-    classDef manualPhase fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:1px,font-weight:bold
-    classDef prodPhase fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:1px,font-weight:bold
-
-    style DEV fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
-    style MANUAL fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
-    style PROD fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
-
-    class P,D,C phase
-    class B,W manualPhase
-    class O,M prodPhase
-    linkStyle default stroke:#9ca3af,stroke-width:2px
-```
-
-</div>
-
-Session 2 replaces the manual deploy step with GitHub Actions.
 
 ---
 ---
@@ -662,15 +519,17 @@ class: diagram-heavy compact
 <div class="grid grid-cols-2 gap-4 mt-4">
 <div>
 
-```mermaid {scale: 0.52}
+```mermaid {scale: 0.46}
 flowchart TB
     F[Fork repo] --> C[Clone your fork]
     C --> I[Install deps]
-    I --> L[Wrangler login]
+    I --> R[Run locally]
+    R --> L[Wrangler login]
     L --> D[Deploy React]
+    D --> A[Why automate?]
 
     classDef step fill:#1f2937,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
-    class F,C,I,L,D step
+    class F,C,I,R,L,D,A step
 ```
 
 </div>
@@ -810,6 +669,211 @@ layout: quote
 ---
 
 # Behold, production!
+
+---
+---
+
+# Manual deploy works, but...
+
+- Today we ran `pnpm build` and `pnpm wrangler deploy` ourselves
+- That is useful because you can see what deployment does
+- In real projects, deployment should not depend on someone remembering commands
+- This is why CI/CD exists
+
+---
+layout: two-cols-header
+---
+
+# When deployment goes wrong
+
+Ever lost your company millions in a few minutes?
+
+::left::
+
+<div class="ml-6 pr-2 pb-12 pt-2">
+  <img src="/knight-capital-stock.jpg" class="max-h-[48vh] w-full object-contain" />
+</div>
+
+
+::right::
+
+<div class="ml-6 pr-2 pb-12 pt-2">
+  <img src="/knight-capital.webp" class="max-h-[48vh] w-full object-contain" />
+</div>
+
+
+
+---
+layout: two-cols-header
+---
+
+# Oops... what broke?
+
+Knight reused an old flag bit for a new trading feature.
+
+::left::
+
+<v-clicks>
+
+- That bit used to enable **Power Peg**: buy high, sell low
+- Deploy was manual; **one server** missed the update
+- Market opens → rogue server runs old logic at full speed
+- Rollback made it worse: **all servers** ran the old code
+
+</v-clicks>
+
+::right::
+
+<div class="ml-6 pr-2 pb-12 pt-2">
+  <img src="/money-go-brrr.png" class="max-h-[48vh] w-full object-contain" />
+</div>
+
+Source: [YouTube: Dev Loses $440 Million in 28 minutes, Chaos Ensues](https://youtu.be/263CooDJZCY)
+
+<!--
+Presenter notes: Power Peg was a retired strategy. The "(not good investment advice)" joke lands well here if you want it verbally.
+-->
+
+
+
+
+---
+---
+
+# So why am I telling you this?
+
+- Deploying by hand works until it doesn't
+- You want the same build on every server, every time
+- That's what CI/CD automates
+- You probably won't lose $440M, but you can still ship broken code to real users
+
+
+---
+layout: statement
+---
+
+### By the way, if you're wondering what happened to the guy who messed up the deployment...
+
+<!-- he didn't get fired; management did. bad process, not one bad engineer. -->
+
+
+
+---
+---
+
+# CI/CD
+
+CI/CD is automation for the boring, repeatable parts of shipping.
+
+<div class="grid grid-cols-2 gap-8 mt-8">
+<div>
+
+## Continuous Integration
+
+- Runs on every push or pull request
+- Installs dependencies
+- Builds the app
+- Runs tests and checks
+- Blocks broken code from merging
+
+</div>
+<div>
+
+## Continuous Delivery or Deployment
+
+- Takes code that passed CI
+- Publishes it to an environment
+- Can deploy to staging first
+- Can deploy to production after approval or merge
+
+</div>
+</div>
+
+---
+class: diagram-heavy compact
+---
+
+# CI/CD flow
+
+<div class="flex justify-center mt-6">
+
+```mermaid {scale: 0.7}
+flowchart LR
+    subgraph CI["<b>CONTINUOUS INTEGRATION</b>"]
+        direction LR
+        B([BUILD]) --> T([TEST]) --> M([MERGE])
+    end
+    subgraph CDel["<b>CONTINUOUS DELIVERY</b>"]
+        R("AUTOMATICALLY<br/>RELEASE TO<br/>REPOSITORY")
+    end
+    subgraph CDep["<b>CONTINUOUS DEPLOYMENT</b>"]
+        D("AUTOMATICALLY<br/>DEPLOY TO<br/>PRODUCTION")
+    end
+    M ==> R ==> D
+
+    classDef ciStep fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
+    classDef delStep fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:2px,font-weight:bold
+    classDef depStep fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:2px,font-weight:bold
+
+    style CI fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
+    style CDel fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
+    style CDep fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
+
+    class B,T,M ciStep
+    class R delStep
+    class D depStep
+    linkStyle default stroke:#9ca3af,stroke-width:2px
+```
+
+</div>
+
+Common tools: GitHub Actions, GitLab CI, Jenkins.
+
+---
+class: diagram-heavy compact
+---
+
+# How CI/CD fits today
+
+Today, we will deploy manually so you understand what is happening.
+
+<div class="flex justify-center mt-4">
+
+```mermaid {scale: 0.68}
+flowchart LR
+    subgraph DEV["<b>DEV</b> (you)"]
+        direction LR
+        P([PLAN]) --> D([DESIGN]) --> C([CODE])
+    end
+    subgraph MANUAL["<b>TODAY</b> (manual deploy)"]
+        direction LR
+        B([BUILD]) --> W([WRANGLER DEPLOY])
+    end
+    subgraph PROD["<b>PROD</b> (live users)"]
+        direction LR
+        O([WORKER]) --> M([MONITOR])
+    end
+    C ==> B
+    W ==> O
+    M -.feedback.-> P
+
+    classDef phase fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
+    classDef manualPhase fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:1px,font-weight:bold
+    classDef prodPhase fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:1px,font-weight:bold
+
+    style DEV fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
+    style MANUAL fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
+    style PROD fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
+
+    class P,D,C phase
+    class B,W manualPhase
+    class O,M prodPhase
+    linkStyle default stroke:#9ca3af,stroke-width:2px
+```
+
+</div>
+
+Session 2 replaces the manual deploy step with GitHub Actions.
 
 ---
 ---
@@ -1155,3 +1219,16 @@ layout: quote
 # Ship the smallest real thing first.
 
 Then make shipping boring.
+
+---
+layout: center
+class: text-center
+---
+
+# How did Part 1 go?
+
+Thanks for joining us today. Your feedback helps us improve future sessions.
+
+<img src="/qr/orb26-deployment-p1-feedback-qr-code.png" alt="Feedback QR code" class="mt-6 mb-10 max-h-56 rounded-xl shadow-lg mx-auto" />
+
+[https://hckr.cc/orb26-deployment-p1-feedback](https://hckr.cc/orb26-deployment-p1-feedback)
