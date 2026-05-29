@@ -320,6 +320,13 @@ backgroundSize: contain
 
 ---
 ---
+# So whose computer is it?
+
+- Big cloud providers (Infrastructure as a Service): AWS, Google Cloud, Azure
+- Developer platforms (Platform as a Service): Cloudflare, Vercel, Netlify, Render, Fly.io
+- Backend platforms (Backend as a Service): Supabase, Firebase, Neon
+---
+---
 
 # Deployment environments
 
@@ -342,7 +349,7 @@ From your laptop to production
 
 <div class="flex justify-center mt-2">
 
-```mermaid {scale: 0.68}
+```mermaid {scale: 0.8}
 flowchart LR
     subgraph DEV["<b>DEV</b> (your machine)"]
         direction LR
@@ -375,57 +382,111 @@ flowchart LR
 
 </div>
 
-<v-clicks class="mt-3 text-sm">
-
-- Today we zoom into **build → deploy**
-- Session 2 automates that path with **CI/CD**
-- **Plan** and **design** are real work, but out of scope today
-- **Staging** is useful, but optional for this workshop
-
-</v-clicks>
+<!--
+Today we zoom into **build → deploy**
+Session 2 automates that path with **CI/CD**
+**Plan** and **design** are real work, but out of scope today
+**Staging** is useful, but optional for this workshop
+-->
 
 ---
+class: compact
+---
+
+# How do you deploy?
+
+<!-- Same goal: get your app to users. The difference is how much infrastructure **you** manage. -->
+
+<div class="mt-10">
+  <div class="mb-2 flex justify-between text-[0.72rem] font-semibold nus-token-faint">
+    <span>You manage more</span>
+    <span>Platform manages more</span>
+  </div>
+  <div class="relative h-2.5 overflow-hidden rounded-full border border-[var(--nus-border)] bg-[var(--nus-code-bg)]">
+    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-[color-mix(in_srgb,var(--nus-accent),transparent_55%)] to-[var(--nus-accent-soft)]"></div>
+  </div>
+  <div class="mt-5 grid grid-cols-3 gap-3 text-center text-[0.78rem]">
+    <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] px-3 py-3 shadow-[var(--nus-shadow)]">
+      <div class="font-bold text-[var(--nus-text)]">Traditional server</div>
+      <div class="nus-token-faint mt-1">Long-lived process on a machine you control</div>
+    </div>
+    <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] px-3 py-3 shadow-[var(--nus-shadow)]">
+      <div class="font-bold text-[var(--nus-text)]">Containers</div>
+      <div class="nus-token-faint mt-1">Portable image, runtime still yours to run</div>
+    </div>
+    <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] px-3 py-3 shadow-[var(--nus-shadow)]">
+      <div class="font-bold text-[var(--nus-text)]">Serverless</div>
+      <div class="nus-token-faint mt-1">You ship code; platform runs and scales it</div>
+    </div>
+  </div>
+  <div v-click class="mt-4 rounded-[8px] border border-dashed border-[var(--nus-border)] bg-[color-mix(in_srgb,var(--nus-accent),transparent_92%)] px-4 py-3 text-center text-[0.8rem]">
+    <span class="font-bold text-[var(--nus-accent)]">Static hosting</span>
+    <span class="nus-token-muted">:  no server process; built files on a CDN (Netlify, Vercel, Cloudflare Pages)</span>
+  </div>
+</div>
+
+<!--
+Spectrum sets up the four types before the detail slide.
+Static is called out because it is frontend-only, not a point on the server-management axis.
+-->
+
+---
+class: compact
 ---
 
 # Types of deployment
 
-<div class="grid grid-cols-2 gap-6 mt-4 text-[0.95rem]">
-<div>
+<p class="nus-token-faint -mt-2 mb-0 text-[0.88rem]">Four common ways to put your app on the internet</p>
 
-## Static hosting
-
-- Serves built HTML, CSS, JS, and assets
-- Great for frontend-only apps
-- Examples: Netlify, Vercel, Cloudflare Pages
-
-</div>
-<div>
-
-## Traditional server
-
-- You run a long-lived process
-- You manage the machine or platform
-- Examples: VPS, EC2, Render web service
-
-</div>
-<div>
-
-## Containers
-
-- Package app, dependencies, and runtime together
-- Runs anywhere with a container runtime
-- Examples: Docker, Fly.io, ECS, Kubernetes
-
-</div>
-<div>
-
-## Serverless
-
-- You ship functions or workers
-- Platform handles runtime and scaling
-- Examples: Cloudflare Workers, AWS Lambda
-
-</div>
+<div class="mt-3 grid grid-cols-2 gap-3">
+  <div v-click class="rounded-[10px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-3 shadow-[var(--nus-shadow)]">
+    <h2 class="!mb-1.5 !text-[1.12rem]">Static hosting</h2>
+    <ul class="!gap-1">
+      <li>Serves built HTML, CSS, JS, and assets</li>
+      <li>Great for frontend-only apps</li>
+    </ul>
+    <div class="mt-2 flex flex-wrap gap-1.5 text-[0.65rem] font-semibold">
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Netlify</span>
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Vercel</span>
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Cloudflare Pages</span>
+    </div>
+  </div>
+  <div v-click class="rounded-[10px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-3 shadow-[var(--nus-shadow)]">
+    <h2 class="!mb-1.5 !text-[1.12rem]">Traditional server</h2>
+    <ul class="!gap-1">
+      <li>You run a long-lived process</li>
+      <li>You manage the machine or platform</li>
+    </ul>
+    <div class="mt-2 flex flex-wrap gap-1.5 text-[0.65rem] font-semibold">
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">VPS</span>
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">EC2</span>
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Render</span>
+    </div>
+  </div>
+  <div v-click class="rounded-[10px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-3 shadow-[var(--nus-shadow)]">
+    <h2 class="!mb-1.5 !text-[1.12rem]">Containers</h2>
+    <ul class="!gap-1">
+      <li>Package app, dependencies, and runtime together</li>
+      <li>Runs anywhere with a container runtime</li>
+    </ul>
+    <div class="mt-2 flex flex-wrap gap-1.5 text-[0.65rem] font-semibold">
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Docker</span>
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Fly.io</span>
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">ECS</span>
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Kubernetes</span>
+    </div>
+  </div>
+  <div v-click class="rounded-[10px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-3 shadow-[var(--nus-shadow)]">
+    <h2 class="!mb-1.5 !text-[1.12rem]">Serverless</h2>
+    <ul class="!gap-1">
+      <li>You ship functions or workers</li>
+      <li>Platform handles runtime and scaling</li>
+    </ul>
+    <div class="mt-2 flex flex-wrap gap-1.5 text-[0.65rem] font-semibold">
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Cloudflare Workers</span>
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">AWS Lambda</span>
+    </div>
+  </div>
 </div>
 
 ---
