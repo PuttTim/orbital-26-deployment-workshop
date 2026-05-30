@@ -575,7 +575,7 @@ flowchart TB
     class U client
     class W,A worker
     class H api
-    class S,R data
+    class S,F data
 ```
 
 </div>
@@ -756,12 +756,11 @@ Checkpoint:
 
 <CheckpointBadge />
 
-# Install and log in to Wrangler
+# Log in to Wrangler
 
-Wrangler is Cloudflare's CLI.
+Wrangler is Cloudflare's CLI. It is already installed when you run `pnpm install`.
 
 ```bash
-pnpm add -D wrangler
 pnpm wrangler login
 pnpm wrangler whoami
 ```
@@ -782,7 +781,7 @@ Use `wrangler.jsonc` as the source of truth for deployment config.
 ```jsonc
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "orbital-part-1",
+  "name": "color-swipe",
   "main": "src/worker.ts",
   "compatibility_date": "2026-05-17",
   "assets": {
@@ -806,8 +805,7 @@ Cloudflare supports JSON and TOML config. Their docs recommend `wrangler.jsonc` 
 # Deploy the React app
 
 ```bash
-pnpm build
-pnpm wrangler deploy
+pnpm deploy
 ```
 
 Checkpoint:
@@ -848,7 +846,7 @@ const app = new Hono();
 app.get("/api/health", (c) => {
   return c.json({
     ok: true,
-    service: "orbital-part-1",
+    service: "color-swipe",
   });
 });
 
@@ -873,7 +871,7 @@ Expected response:
 ```json
 {
   "ok": true,
-  "service": "orbital-part-1"
+  "service": "color-swipe"
 }
 ```
 
@@ -1011,13 +1009,7 @@ Open in the browser:
 https://your-project.your-subdomain.workers.dev/api/colors
 ```
 
-Expected at first:
-
-```json
-[]
-```
-
-After you insert a row:
+Expected after `pnpm migrate`:
 
 ```json
 [
@@ -1025,12 +1017,15 @@ After you insert a row:
     "id": "...",
     "name": "Sunset Orange",
     "hex": "#FF6B35",
+    "image_key": null,
+    "upvotes": 0,
+    "downvotes": 0,
     "created_at": "..."
   }
 ]
 ```
 
-If you get `[]` forever or a 500, check RLS policies first.
+If you get `[]` before migrating, that is expected. If you get `[]` after migrating or a 500, check RLS policies first.
 
 ---
 ---
@@ -1133,7 +1128,7 @@ flowchart TB
 
 # Manual deploy works, but...
 
-- Today we ran `pnpm build` and `pnpm wrangler deploy` ourselves
+- Today we ran `pnpm deploy` ourselves
 - That is useful because you can see what deployment does
 - In real projects, deployment should not depend on someone remembering commands
 - This is why CI/CD exists
