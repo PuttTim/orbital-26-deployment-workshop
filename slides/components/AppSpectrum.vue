@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { assetUrl } from "../utils/assets";
+
 interface App {
 	name: string;
 	logo: string;
@@ -10,29 +12,29 @@ interface App {
 const apps: App[] = [
 	{
 		name: "Calculator",
-		logo: "/logos/Calculator_(iOS_26)_app_icon.webp",
+		logo: assetUrl("logos/Calculator_(iOS_26)_app_icon.webp"),
 		dotColor: "var(--nus-success)",
 	},
 	{
 		name: "Minecraft",
-		logo: "/logos/minecraft_bedrock_icon.svg",
+		logo: assetUrl("logos/minecraft_bedrock_icon.svg"),
 		dotColor: "color-mix(in srgb, var(--nus-success), var(--nus-warning) 20%)",
 		annotation: "Multiplayer needs a server",
 	},
 	{
 		name: "Spotify",
-		logo: "/logos/Spotify_App_Logo.svg",
+		logo: assetUrl("logos/Spotify_App_Logo.svg"),
 		dotColor: "var(--nus-warning)",
 		annotation: "Has an offline mode",
 	},
 	{
 		name: "Instagram",
-		logo: "/logos/Instagram_logo_2016.svg",
+		logo: assetUrl("logos/Instagram_logo_2016.svg"),
 		dotColor: "var(--nus-accent)",
 	},
 	{
 		name: "Grab",
-		logo: "/logos/grab_app_icon.svg",
+		logo: assetUrl("logos/grab_app_icon.svg"),
 		dotColor: "var(--nus-danger)",
 	},
 ];

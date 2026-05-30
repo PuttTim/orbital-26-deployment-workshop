@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { assetUrl } from "../utils/assets";
+
 // biome-ignore lint/correctness/noUnusedVariables: Used by the Vue template.
 const tienCheng = {
 	index: "01",
 	name: "Tien Cheng",
-	photo: "/presenters/tiencheng.webp",
+	photo: assetUrl("presenters/tiencheng.webp"),
 	program: "Y1 CS",
 	affiliationUrl: "https://www.nushackers.org/",
 	photoPosition: "center 28%",
@@ -13,7 +15,7 @@ const tienCheng = {
 const putt = {
 	index: "02",
 	name: "Putt",
-	photo: "/presenters/putt.webp",
+	photo: assetUrl("presenters/putt.webp"),
 	program: "Y1 BAIS",
 	affiliationUrl: "https://www.nushackers.org/",
 	photoPosition: "center 32%",
