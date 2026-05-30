@@ -17,6 +17,10 @@ layout: section
 
 ## Today, let's make your app real!
 
+<!--
+It's time to make your app real
+-->
+
 ---
 layout: center
 class: text-center
@@ -24,7 +28,7 @@ class: text-center
 
 # So... you built something.
 
-<img src="/localhost-meme.webp" class="mt-6 max-h-64 rounded-xl shadow-lg mx-auto" />
+<img src="/localhost-meme.webp" class="mt-6 max-h-70 rounded-xl shadow-lg mx-auto" />
 
 <!--
 You drop the link in your team chat: `localhost:5173`
@@ -61,11 +65,14 @@ Your teammate's machine asks itself, not yours.
 -->
 
 ---
----
 
 # How do most apps work?
 
 <AppSpectrum />
+
+<!--
+Level of connectivity your app requires probably falls on a spectrum depending on the type of app you are building
+-->
 
 ---
 layout: two-cols-header
@@ -312,6 +319,10 @@ layout: section
 
 ## What does it mean to deploy to production?
 
+<!--
+With that said, what does it actually mean to
+-->
+
 ---
 layout: image
 image: /the-cloud.webp
@@ -319,13 +330,22 @@ backgroundSize: contain
 ---
 
 ---
----
+
 # So whose computer is it?
 
 - Big cloud providers (Infrastructure as a Service): AWS, Google Cloud, Azure
 - Developer platforms (Platform as a Service): Cloudflare, Vercel, Netlify, Render, Fly.io
 - Backend platforms (Backend as a Service): Supabase, Firebase, Neon
----
+
+<!--
+Broadly depends on the level of control you want
+
+More managed/dev friendly services:
+- More tied down (ecosystem)
+- Can build faster
+- May or may not be more expensive
+-->
+
 ---
 
 # Deployment environments
@@ -338,6 +358,18 @@ backgroundSize: contain
 | Production | Cloud server | Real users | The live app |
 
 We'll skip the staging environment in this workshop (and frankly, you probably don't need it for Orbital), but the tl;dr is: it's a copy of the production environment, minus the live users.
+
+<!--
+Before we get into the "how", let's get on the same page about the "where".
+
+When we talk about running your app, there are three environments you'll hear about constantly. The first is local — this is just your laptop. You're the only one who can see it, and it's where you spend most of your time building and fixing things.
+
+Then there's staging, which is a cloud server that mirrors production but isn't open to real users. It's basically a dress rehearsal. Your team can test things there before they go live.
+
+And finally, production — the real deal. This is the cloud server your actual users hit when they open your app.
+
+Now, for Orbital, you realistically only need two of these: local and production. Staging is a nice-to-have, but it adds complexity you probably don't need yet. So for this workshop, we're going to focus on getting you from local to production.
+-->
 
 ---
 class: diagram-heavy compact
@@ -381,6 +413,7 @@ flowchart LR
 ```
 
 </div>
+Software Development Life Cycle (SDLC)
 
 <!--
 Today we zoom into **build → deploy**
@@ -411,12 +444,12 @@ class: compact
       <div class="nus-token-faint mt-1">Long-lived process on a machine you control</div>
     </div>
     <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] px-3 py-3 shadow-[var(--nus-shadow)]">
-      <div class="font-bold text-[var(--nus-text)]">Containers</div>
-      <div class="nus-token-faint mt-1">Portable image, runtime still yours to run</div>
+      <div class="font-bold text-[var(--nus-text)]">Container platforms</div>
+      <div class="nus-token-faint mt-1">You ship an image; the platform or cluster runs it</div>
     </div>
     <div v-click class="rounded-[8px] border border-[var(--nus-border)] bg-[var(--nus-surface)] px-3 py-3 shadow-[var(--nus-shadow)]">
-      <div class="font-bold text-[var(--nus-text)]">Serverless</div>
-      <div class="nus-token-faint mt-1">You ship code; platform runs and scales it</div>
+      <div class="font-bold text-[var(--nus-text)]">Serverless functions</div>
+      <div class="nus-token-faint mt-1">You ship handlers; the platform owns the runtime</div>
     </div>
   </div>
   <div v-click class="mt-4 rounded-[8px] border border-dashed border-[var(--nus-border)] bg-[color-mix(in_srgb,var(--nus-accent),transparent_92%)] px-4 py-3 text-center text-[0.8rem]">
@@ -426,8 +459,13 @@ class: compact
 </div>
 
 <!--
-Spectrum sets up the four types before the detail slide.
-Static is called out because it is frontend-only, not a point on the server-management axis.
+This spectrum is about how much runtime and infrastructure management you own.
+Containers and serverless are not opposites.
+A container is a packaging format: app plus dependencies plus runtime.
+Serverless is an operating model: the provider starts, scales, and manages capacity.
+Some platforms combine both ideas.
+Cloud Run is a good example: serverless operations, container artifact.
+Static hosting is called out because it is frontend-only, not a point on the server-management axis.
 -->
 
 ---
@@ -464,30 +502,40 @@ class: compact
     </div>
   </div>
   <div v-click class="rounded-[10px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-3 shadow-[var(--nus-shadow)]">
-    <h2 class="!mb-1.5 !text-[1.12rem]">Containers</h2>
+    <h2 class="!mb-1.5 !text-[1.12rem]">Containerized services</h2>
     <ul class="!gap-1">
-      <li>Package app, dependencies, and runtime together</li>
-      <li>Runs anywhere with a container runtime</li>
+      <li>Package app, dependencies, and runtime into an image</li>
+      <li>Can run on your own infra or a managed platform</li>
     </ul>
     <div class="mt-2 flex flex-wrap gap-1.5 text-[0.65rem] font-semibold">
       <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Docker</span>
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Cloud Run</span>
       <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Fly.io</span>
       <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">ECS</span>
       <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Kubernetes</span>
     </div>
   </div>
   <div v-click class="rounded-[10px] border border-[var(--nus-border)] bg-[var(--nus-surface)] p-3 shadow-[var(--nus-shadow)]">
-    <h2 class="!mb-1.5 !text-[1.12rem]">Serverless</h2>
+    <h2 class="!mb-1.5 !text-[1.12rem]">Serverless functions & workers</h2>
     <ul class="!gap-1">
-      <li>You ship functions or workers</li>
-      <li>Platform handles runtime and scaling</li>
+      <li>You ship functions, workers, or route handlers</li>
+      <li>Provider runtime handles startup, scaling, and requests</li>
     </ul>
     <div class="mt-2 flex flex-wrap gap-1.5 text-[0.65rem] font-semibold">
       <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Cloudflare Workers</span>
       <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">AWS Lambda</span>
+      <span class="rounded border border-[var(--nus-border)] px-2 py-0.5 text-[var(--nus-accent)]">Vercel Functions</span>
     </div>
   </div>
 </div>
+
+<!--
+These are common shapes, not strict boxes.
+Containerized services answer: what artifact do we ship?
+Serverless functions and workers answer: who owns startup, scaling, and request handling?
+Cloud Run is a good example of the overlap: serverless operations, container artifact.
+For this workshop, Cloudflare Workers is our main serverless example.
+-->
 
 ---
 layout: two-cols-header
@@ -522,6 +570,12 @@ layout: two-cols-header
 ::right::
 
 ![Serverless](/serverless.webp)
+
+<!--
+Need to mention that we can still roughly split serverless services into:
+- Functions as a Service
+- Containers as a Service
+-->
 
 ---
 ---
@@ -570,12 +624,14 @@ flowchart TB
     classDef client fill:#2563eb,color:#ffffff,stroke:#1d4ed8,stroke-width:2px,font-weight:bold
     classDef worker fill:#e66000,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
     classDef api fill:#10b981,color:#ffffff,stroke:#047857,stroke-width:2px,font-weight:bold
-    classDef data fill:#7c3aed,color:#ffffff,stroke:#5b21b6,stroke-width:2px,font-weight:bold
+    classDef db fill:#7c3aed,color:#ffffff,stroke:#5b21b6,stroke-width:2px,font-weight:bold
+    classDef storage fill:#0d9488,color:#ffffff,stroke:#0f766e,stroke-width:2px,font-weight:bold
 
     class U client
     class W,A worker
     class H api
-    class S,F data
+    class S db
+    class F storage
 ```
 
 </div>
@@ -910,27 +966,6 @@ It prints the SQL + a link to your project's SQL Editor. Copy the SQL, paste int
 
 If PostgREST hasn't reloaded yet, the script tells you what to do next.
 
----
----
-
-# Turn on RLS for the demo
-
-The migration script handles this for you, but here's what it does behind the scenes:
-
-```sql
-alter table public.colors enable row level security;
-
-create policy "Workshop demo access"
-  on public.colors
-  for all
-  to anon, authenticated
-  using (true)
-  with check (true);
-```
-
-Real projects would not use `using (true)` in production.
-
-If queries fail even after migrating, check **Authentication → Policies** in Supabase.
 
 ---
 ---
@@ -941,8 +976,6 @@ From **Settings → API Keys** in Supabase:
 
 - **Project URL** → `SUPABASE_URL`
 - **Publishable key** (`sb_publishable_...`) → `SUPABASE_KEY`
-
-The publishable key replaced the old `anon` key. Either works for this workshop.
 
 This key respects RLS. Keep it in the Worker, not in your React bundle.
 
@@ -1106,19 +1139,21 @@ flowchart TB
     B -->|GET /api/health| H[Hono API]
     H -->|JSON| B
     B -->|POST /api/vote| H
-    H -->|Rows| S[(Supabase)]
+    H -->|Rows| S[("DB (Supabase)")]
     B -->|GET /api/images| H
-    H -->|Files| F[(Supabase Storage)]
+    H -->|Files| F[("Object Storage (Supabase)")]
 
     classDef client fill:#2563eb,color:#ffffff,stroke:#1d4ed8,stroke-width:2px,font-weight:bold
     classDef worker fill:#e66000,color:#ffffff,stroke:#f8941d,stroke-width:2px,font-weight:bold
     classDef api fill:#10b981,color:#ffffff,stroke:#047857,stroke-width:2px,font-weight:bold
-    classDef data fill:#7c3aed,color:#ffffff,stroke:#5b21b6,stroke-width:2px,font-weight:bold
+    classDef db fill:#7c3aed,color:#ffffff,stroke:#5b21b6,stroke-width:2px,font-weight:bold
+    classDef storage fill:#0d9488,color:#ffffff,stroke:#0f766e,stroke-width:2px,font-weight:bold
 
     class B client
     class W,A worker
     class H api
-    class S,F data
+    class S db
+    class F storage
 ```
 
 </div>
@@ -1245,56 +1280,20 @@ CI/CD is automation for the boring, repeatable parts of shipping.
 </div>
 
 ---
-class: diagram-heavy compact
+class: diagram-heavy compact stacked-cicd
 ---
 
 # CI/CD flow
 
-<div class="flex justify-center mt-6">
+<div class="flex flex-col items-center gap-0 mt-1">
 
-```mermaid {scale: 0.7}
-flowchart LR
-    subgraph CI["<b>CONTINUOUS INTEGRATION</b>"]
-        direction LR
-        B([BUILD]) --> T([TEST]) --> M([MERGE])
-    end
-    subgraph CDel["<b>CONTINUOUS DELIVERY</b>"]
-        R("AUTOMATICALLY<br/>RELEASE TO<br/>REPOSITORY")
-    end
-    subgraph CDep["<b>CONTINUOUS DEPLOYMENT</b>"]
-        D("AUTOMATICALLY<br/>DEPLOY TO<br/>PRODUCTION")
-    end
-    M ==> R ==> D
+<h2 class="mb-0 mt-1 text-[1.15rem] font-semibold leading-tight">Before</h2>
 
-    classDef ciStep fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
-    classDef delStep fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:2px,font-weight:bold
-    classDef depStep fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:2px,font-weight:bold
+<p class="nus-token-faint mb-0 mt-0.5 text-[0.82rem]">Today, we deployed manually so you understand what is happening.</p>
 
-    style CI fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
-    style CDel fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
-    style CDep fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
+<div class="flex justify-center w-full mt-0.5">
 
-    class B,T,M ciStep
-    class R delStep
-    class D depStep
-    linkStyle default stroke:#9ca3af,stroke-width:2px
-```
-
-</div>
-
-Common tools: GitHub Actions, GitLab CI, Jenkins.
-
----
-class: diagram-heavy compact
----
-
-# How CI/CD fits today
-
-Today, we deployed manually so you understand what is happening.
-
-<div class="flex justify-center mt-4">
-
-```mermaid {scale: 0.68}
+```mermaid {scale: 0.5}
 flowchart LR
     subgraph DEV["<b>DEV</b> (you)"]
         direction LR
@@ -1328,7 +1327,45 @@ flowchart LR
 
 </div>
 
-Next week, we'll replace the manual deploy step with GitHub Actions
+<p class="nus-token-faint mb-0 mt-0.5 text-[0.78rem]">Next week, we'll replace the manual deploy step with GitHub Actions</p>
+
+<h2 class="mb-0 mt-2 text-[1.15rem] font-semibold leading-tight">After</h2>
+
+<div class="flex justify-center w-full">
+
+```mermaid {scale: 0.6}
+flowchart LR
+    subgraph CI["<b>CONTINUOUS INTEGRATION</b>"]
+        direction LR
+        B([BUILD]) --> T([TEST]) --> M([MERGE])
+    end
+    subgraph CDel["<b>CONTINUOUS DELIVERY</b>"]
+        R("AUTOMATICALLY<br/>RELEASE TO<br/>REPOSITORY")
+    end
+    subgraph CDep["<b>CONTINUOUS DEPLOYMENT</b>"]
+        D("AUTOMATICALLY<br/>DEPLOY TO<br/>PRODUCTION")
+    end
+    M ==> R ==> D
+
+    classDef ciStep fill:#374151,color:#ffffff,stroke:#6b7280,stroke-width:1px,font-weight:bold
+    classDef delStep fill:#fef3c7,color:#78350f,stroke:#f8941d,stroke-width:2px,font-weight:bold
+    classDef depStep fill:#fde4cc,color:#7c2d12,stroke:#e66000,stroke-width:2px,font-weight:bold
+
+    style CI fill:#1f2937,stroke:#6b7280,stroke-width:2px,color:#f3f4f6
+    style CDel fill:#78350f,stroke:#f8941d,stroke-width:2px,color:#fde68a
+    style CDep fill:#7c2d12,stroke:#e66000,stroke-width:2px,color:#fed7aa
+
+    class B,T,M ciStep
+    class R delStep
+    class D depStep
+    linkStyle default stroke:#9ca3af,stroke-width:2px
+```
+
+</div>
+
+<p class="nus-token-faint mb-0 mt-0.5 text-[0.78rem]">Common tools: GitHub Actions, GitLab CI, Jenkins.</p>
+
+</div>
 
 ---
 ---
@@ -1345,16 +1382,13 @@ By the end, you should have:
 - At least one image stored and served through the API
 
 ---
----
 
 # What's next?
 
-- Staging environments
 - GitHub Actions CI/CD
 - Automated tests before deploy
-- Containerisation in more depth
+- Containerisation (Docker)
 - Monitoring and production debugging
-- Safer secrets, migrations, and release workflows
 
 ---
 layout: quote
