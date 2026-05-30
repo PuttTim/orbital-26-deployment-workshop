@@ -1,8 +1,9 @@
 import { readdir, stat } from "node:fs/promises";
 import { join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
-const PUBLIC_DIR = join(import.meta.dirname, "..", "public");
+const PUBLIC_DIR = fileURLToPath(new URL("../public/", import.meta.url));
 const RASTER_EXT = new Set([".png", ".jpg", ".jpeg"]);
 
 /** Higher quality for logos and QR codes so edges stay crisp. */
