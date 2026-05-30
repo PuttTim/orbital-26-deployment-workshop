@@ -1021,6 +1021,20 @@ Checkpoint:
 - You have a fork under your own GitHub account
 - You can push branches without touching the workshop repo
 
+<!--
+OK let's actually do this now. First step: fork the repository.
+
+Open this URL in your browser — it'll take you to the workshop repo. Click the Fork button in the top right. DO NOT just clone it — you need your own fork under your own GitHub account.
+
+Why does this matter? In Session 2, we're going to set up CI/CD with GitHub Actions. That only works if you own the repo and can push to it. If you clone the main repo, you can't push back.
+
+If you've never forked before: it creates a copy of the repo under YOUR GitHub account. You get full push access. You can do whatever you want. The original stays untouched.
+
+I'll give everyone a couple minutes to fork.
+
+[~3 min, wait for students]
+-->
+
 ---
 ---
 
@@ -1043,6 +1057,18 @@ Checkpoint:
 - You can refresh without errors
 - You can explain why the URL still only works for you
 
+<!--
+Now clone YOUR fork — not the original repo. Replace <your-username> with your GitHub username.
+
+cd into part-1, run pnpm install, then pnpm dev. After a few seconds, Vite will print a localhost URL. Open it in your browser.
+
+You should see an empty state — "No colors found." That's expected. There's no data yet. But the React app is running, the code loaded, no errors. That's your checkpoint.
+
+And yes — the URL only works for you. That's the localhost problem we talked about. We're about to fix that.
+
+[~3 min, wait for install]
+-->
+
 ---
 ---
 
@@ -1062,6 +1088,18 @@ Checkpoint:
 - Browser opens the Cloudflare auth flow
 - `whoami` shows your Cloudflare account
 - You can deploy from this terminal
+
+<!--
+Wrangler is already installed as a dev dependency. When you ran pnpm install, it was set up.
+
+Run pnpm wrangler login. A browser will open asking you to authorize. Click Allow. Then run pnpm wrangler whoami to confirm you're logged in.
+
+If you get a permission error, make sure you signed up for the Cloudflare free plan. You don't need to add payment info.
+
+Once whoami works, you're ready to deploy. Let's configure the deployment next.
+
+[~2 min, wait for auth]
+-->
 
 ---
 ---
@@ -1089,6 +1127,19 @@ Use `wrangler.jsonc` as the source of truth for deployment config.
 
 Cloudflare supports JSON and TOML config. Their docs recommend `wrangler.jsonc` for new projects.
 
+<!--
+The wrangler.jsonc is already in the repo — you don't need to create it. Let me explain what it does.
+
+name: identifies your Worker in the Cloudflare dashboard.
+main: points to src/worker.ts — that's our Hono API entry point.
+assets: tells Wrangler to serve files from ./dist (our Vite build output) as static assets. The run_worker_first setting means requests to /api/* go to the Hono worker first, everything else serves static files.
+observability: enables logging.
+
+This is your deployment manifest. Everything Cloudflare needs to deploy your app is in this file.
+
+[~1 min]
+-->
+
 ---
 ---
 
@@ -1109,11 +1160,31 @@ Checkpoint:
 - Your friend can open the same URL
 - The Cloudflare dashboard shows a Worker deployment
 
+<!--
+pnpm run deploy runs two commands: pnpm build (which compiles TypeScript and bundles with Vite) then wrangler deploy (which uploads to Cloudflare).
+
+The first deploy takes about 30 seconds. Wrangler will print a workers.dev URL — that's your app's public address.
+
+Open that URL in your browser. You should see the same empty state from localhost, but now it's accessible from anywhere. Share the URL with the person next to you — they should see the same thing.
+
+If the deploy fails, check that you're logged in (pnpm wrangler whoami) and that the build passed locally.
+
+[~3 min, wait for deploys]
+-->
+
 ---
 layout: quote
 ---
 
 # Behold, production!
+
+<!--
+Congratulations! You just deployed your first app to production. It's on the public internet, accessible to anyone.
+
+But right now it's just a frontend with no data. The next step is adding an API and connecting it to a real database.
+
+[~30 sec]
+-->
 
 ---
 ---
@@ -1124,6 +1195,16 @@ layout: quote
 - Next, we make it a more realistic full-stack app
 - We will add an API, data, storage, and secrets
 - Then we will come back to what should be automated
+
+<!--
+We've got the frontend deployed. Now let's turn it into a real full-stack app.
+
+The next three sections build on each other: first a Hono API, then Supabase for data, then Supabase Storage for images. Each step makes the app more real.
+
+Let's start with the API.
+
+[~30 sec]
+-->
 
 ---
 ---
@@ -1146,6 +1227,18 @@ app.get("/api/health", (c) => {
 
 export default app;
 ```
+
+<!--
+Your repo already has this code in src/worker.ts. The worker is deployed alongside your React app — they share the same workers.dev URL.
+
+Hono is designed for edge runtimes like Cloudflare Workers. It's tiny (about 14KB), has great TypeScript support, and its API feels familiar if you've used Express.
+
+The health endpoint is the simplest possible API route. It returns a JSON object with ok: true and the service name. No database, no auth — just a quick way to verify the API is alive.
+
+Let's deploy and test it.
+
+[~1.5 min]
+-->
 
 ---
 ---
@@ -1171,6 +1264,16 @@ Expected response:
 
 If this works, your deployed frontend and deployed backend are sharing one public origin.
 
+<!--
+Open the URL with /api/health appended. You should see JSON in the browser.
+
+This is your first API endpoint live on the internet. The React frontend and Hono API are running on the same Worker, sharing the same URL. API routes start with /api/*, everything else serves the static React files.
+
+If you get a 404, make sure your latest deploy succeeded and the wrangler.jsonc has run_worker_first set to ["/api/*"].
+
+[~2 min, verify URLs]
+-->
+
 ---
 ---
 
@@ -1186,6 +1289,18 @@ Create a project if you have not already. Today we only need:
 - One Hono route that reads from it
 
 Keep deeper database design for later.
+
+<!--
+Now we need real data. We're going to use Supabase — it's an open-source Firebase alternative that gives you a hosted Postgres database, authentication, and file storage.
+
+If you haven't created a Supabase project yet, do it now. Go to supabase.com, sign up, create a new project. Pick a name, set a database password you'll remember, choose the Singapore region for lowest latency.
+
+Creating the project takes about 2-3 minutes. While it spins up, let me explain what we're going to do with it.
+
+We'll create a colors table, seed it with 20 colors, connect it to our Hono API, and set up Supabase Storage for the color images.
+
+[~3 min, wait for project creation]
+-->
 
 ---
 ---
@@ -1211,6 +1326,20 @@ It prints the SQL + a link to your project's SQL Editor. Copy the SQL, paste int
 
 If PostgREST hasn't reloaded yet, the script tells you what to do next.
 
+<!--
+First, make sure you've added your Supabase URL and publishable key to the .dev.vars file. Copy from .dev.vars.example, then paste your credentials.
+
+The .dev.vars file is automatically read by the migrate script. You don't need to set environment variables manually.
+
+Run pnpm migrate. The first time, it'll tell you the table doesn't exist yet and print the SQL along with a direct link to your SQL Editor. Open that link, paste the SQL, click Run.
+
+If you get a "schema cache" error after running the SQL, just wait a few seconds and re-run pnpm migrate. PostgREST needs a moment to reload.
+
+Once it works, you'll see 20 colors printed with checkmarks. Each color has a name, a hex code, upvotes and downvotes set to 0.
+
+[~5 min, students run migrate]
+-->
+
 
 ---
 ---
@@ -1227,6 +1356,18 @@ From **Project Overview** in Supabase:
 This key respects RLS. Keep it in the Worker, not in your React bundle.
 
 Never put the **secret** / `service_role` key in frontend code.
+
+<!--
+Let me show you where these live. In your Supabase dashboard, go to Project Overview. You'll see your Project URL at the top, and the API keys section below.
+
+The publishable key starts with sb_publishable_. This is an anon key — anyone can see it, but it respects Row Level Security. That means it can only do what your RLS policies allow.
+
+The secret key (or service_role key) should NEVER go in your frontend code or be committed to git. It bypasses all RLS policies. Keep it in environment variables only.
+
+For today, we only need the publishable key.
+
+[~2 min]
+-->
 
 ---
 ---
@@ -1256,6 +1397,18 @@ Please don't commit real secrets.
 <img src="/api-key-meme.webp" class="h-24 w-full object-contain" />
 </div>
 </div>
+
+<!--
+For local development, the .dev.vars file works fine. But for production, your Worker can't read .dev.vars — it needs secrets set through Wrangler.
+
+pnpm wrangler secret put stores your secrets encrypted in Cloudflare's infrastructure. They get injected into your Worker as environment variables at runtime.
+
+You need to set both SUPABASE_URL and SUPABASE_KEY as secrets. Run these two commands now.
+
+This also marks a really important point: never commit real secrets to git. The .dev.vars file is gitignored. Wrangler secrets are encrypted on Cloudflare's side. But if you ever accidentally commit a secret, rotate it immediately — especially API keys.
+
+[~3 min, students set secrets]
+-->
 ---
 ---
 
@@ -1280,6 +1433,18 @@ app.get("/api/colors", async (c) => {
 ```
 
 Use the same client pattern for `POST /api/vote`.
+
+<!--
+This code is already in your worker.ts. The Supabase client reads SUPABASE_URL and SUPABASE_KEY from the worker's environment (c.env). In production, these come from the Wrangler secrets you just set.
+
+The pattern is straightforward: create a client, query a table, return the data as JSON. If there's an error, return a 500 with the error message.
+
+Your worker also has a POST /api/vote route that increments upvotes or downvotes, and a GET /api/results route that returns colors sorted by votes.
+
+After setting secrets, redeploy with pnpm deploy. Then hit /api/colors to see your data.
+
+[~2 min]
+-->
 
 ---
 ---
@@ -1312,6 +1477,14 @@ Expected after `pnpm migrate`:
 
 If you get `[]` before migrating, that is expected. If you get `[]` after migrating or a 500, check RLS policies first.
 
+<!--
+If you open your app now, you'll see cards appear! But they're white cards with just the name and hex text — no color swatches yet. That's because image_key is null. The visual comes from Supabase Storage, which is our next step.
+
+If you get an empty array or a 500 error, the most common issue is RLS. Go to the Supabase dashboard → Authentication → Policies, find the colors table, and make sure the "Workshop demo access" policy exists and allows SELECT/INSERT for anon and authenticated roles.
+
+[~3 min, verify API]
+-->
+
 ---
 ---
 
@@ -1324,6 +1497,16 @@ Supabase Storage is file storage for blobs:
 - User uploads
 
 The database stores metadata. Storage stores the actual file bytes.
+
+<!--
+Last piece: we need actual images for the color cards. We're going to use Supabase Storage — the same Supabase project you already have.
+
+The database stores metadata (name, hex, upvotes, image_key). The storage bucket stores the actual SVG files. The Worker acts as a proxy — the browser requests /api/images/abc.svg, and the Worker downloads it from Supabase Storage and returns it.
+
+This is a common pattern: never expose your storage bucket directly to the internet. Always proxy through your API so you can control access, add caching, or modify the response.
+
+[~1 min]
+-->
 
 ---
 ---
@@ -1354,6 +1537,18 @@ The script generates SVG swatches for each color and uploads them. If the bucket
 
 The Worker uses the Supabase client to download files — no Wrangler binding needed.
 
+<!--
+Go to your Supabase dashboard, click Storage in the sidebar, then New Bucket. Name it "color-swipe-images". Keep it private — that way, the images can only be accessed through our Worker proxy, not directly by anyone who guesses the URL.
+
+Then you need a storage policy. Click on the bucket name, go to the Policies tab. Create a new policy that allows SELECT (download) and INSERT (upload) for everyone. Without this, the publishable key can't read or write files.
+
+Now run pnpm seed-images. This reads all 20 colors from your database, generates an SVG swatch for each one, uploads to the bucket, and stores the filename in the image_key column.
+
+If anything goes wrong — missing bucket, missing policy — the script prints exactly what to do.
+
+[~5 min, students create bucket and run seed]
+-->
+
 ---
 
 <CheckpointBadge />
@@ -1380,6 +1575,16 @@ Checkpoint:
 - The dashboard shows the object in the bucket
 - The GET route serves the file through the Worker
 - The `image_key` column stores the filename
+
+<!--
+This is the proxy route. When the browser loads /api/images/abc.svg, the Worker downloads aba.svg from the colors/ prefix in the storage bucket and streams it back as an SVG response.
+
+The Response object here is a Cloudflare Workers feature — it streams the file data efficiently without loading the whole thing into memory.
+
+After redeploying, go to your app and you should see the colored cards! The images come from Supabase Storage, served through your Worker. That's the full stack working end to end.
+
+[~2 min, redeploy and verify]
+-->
 
 ---
 class: diagram-heavy compact
