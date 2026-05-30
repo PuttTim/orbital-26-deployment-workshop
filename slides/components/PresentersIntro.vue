@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// biome-ignore lint/correctness/noUnusedVariables: Used by the Vue template.
 const tienCheng = {
 	index: "01",
 	name: "Tien Cheng",
@@ -8,6 +9,7 @@ const tienCheng = {
 	photoPosition: "center 28%",
 };
 
+// biome-ignore lint/correctness/noUnusedVariables: Used by the Vue template.
 const putt = {
 	index: "02",
 	name: "Putt",
