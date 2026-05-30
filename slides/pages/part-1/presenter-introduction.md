@@ -1,21 +1,7 @@
 ---
-layout: two-cols-header
+layout: default
+class: presenters-slide
+clicks: 0
 ---
 
-# Presenters
-
-::left::
-
-## Tien Cheng
-
-![Tien Cheng](../../public/presenters/tiencheng.jpg){class="w-60 rounded"}
-
-- Y1 CS
-- NUS Hackers Coreteam Member
-
-::right::
-
-## Putt
-
-- Y1 BAIS
-- NUS Hackers Coreteam Member
+<PresentersIntro />
