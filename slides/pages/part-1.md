@@ -1014,6 +1014,8 @@ Click **Fork** to create your own copy under your GitHub account.
 
 Forking first matters because session 2 will connect CI/CD to your GitHub repo. Everyone needs their own copy to push to.
 
+<img src="/workshop-screenshots/new fork.png" class="mt-4 max-h-16 rounded-lg shadow-lg mx-auto" />
+
 Checkpoint:
 
 - You have a fork under your own GitHub account
@@ -1095,8 +1097,10 @@ Cloudflare supports JSON and TOML config. Their docs recommend `wrangler.jsonc` 
 # Deploy the React app
 
 ```bash
-pnpm deploy
+pnpm run deploy
 ```
+
+<img src="/workshop-screenshots/pnpm run deploy.png" class="mt-4 max-h-24 rounded-lg shadow-lg mx-auto" />
 
 Checkpoint:
 
@@ -1198,6 +1202,13 @@ pnpm migrate
 
 It prints the SQL + a link to your project's SQL Editor. Copy the SQL, paste into the editor, click **Run**, then re-run `pnpm migrate`. It seeds 20 colors.
 
+<div class="flex flex-row items-center gap-4 mt-4">  
+<img src="/workshop-screenshots/pnpm migrate.png" class="mt-4 max-h-48 rounded-lg shadow-lg mx-auto" />
+<img src="/workshop-screenshots/table create.png" class="mt-2 max-h-48 rounded-lg shadow-lg mx-auto" />
+</div> 
+
+
+
 If PostgREST hasn't reloaded yet, the script tells you what to do next.
 
 
@@ -1206,10 +1217,12 @@ If PostgREST hasn't reloaded yet, the script tells you what to do next.
 
 # Which API key?
 
-From **Settings → API Keys** in Supabase:
+From **Project Overview** in Supabase:
 
 - **Project URL** → `SUPABASE_URL`
 - **Publishable key** (`sb_publishable_...`) → `SUPABASE_KEY`
+
+<img src="/workshop-screenshots/supabase env vars.png" class="mt-4 max-h-32 rounded-lg shadow-lg mx-auto" />
 
 This key respects RLS. Keep it in the Worker, not in your React bundle.
 
@@ -1233,11 +1246,16 @@ Production uses Cloudflare secrets:
 pnpm wrangler secret put SUPABASE_URL
 pnpm wrangler secret put SUPABASE_KEY
 ```
+<div class="flex flex-row items-center gap-4 mt-4">
 
+<img src="/workshop-screenshots/wrangler secret put.png" class="mt-4 max-h-32 rounded-lg shadow-lg mx-auto" />
+
+<div class="flex flex-col gap-2">
 Please don't commit real secrets.
-
-<img src="/api-key-meme.webp" class="h-48 w-full object-contain" />
-
+    
+<img src="/api-key-meme.webp" class="h-24 w-full object-contain" />
+</div>
+</div>
 ---
 ---
 
@@ -1320,6 +1338,11 @@ Go to **Supabase dashboard → Storage** and click **New Bucket**:
 Then add a storage policy:
 1. Click the bucket → **Policies** tab
 2. Create policy: allow **SELECT** and **INSERT** for everyone
+
+<div class="flex flex-row items-center gap-4 mt-4">
+<img src="/workshop-screenshots/bucket-create.png" class="mt-4 max-h-32 rounded-lg shadow-lg mx-auto" />
+<img src="/workshop-screenshots/bucket-policies.png" class="mt-4 max-h-48 rounded-lg shadow-lg mx-auto" />
+</div>
 
 Then generate and upload the images:
 
