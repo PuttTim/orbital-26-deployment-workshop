@@ -42,7 +42,7 @@ Open `tests/api/worker.test.ts`. The first test checks the `/api/health` route:
 
 ```ts
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import app from "../../src/worker";
+import { app } from "../../src/worker";
 
 // Mock Supabase so tests don't need a real database
 const mockSelect = vi.fn();
@@ -165,7 +165,8 @@ pnpm test
 
 Checkpoint:
 
-- All 5 tests pass (3 API + 2 client)
+- The tests you wrote so far all pass (3 API + 2 client)
+- The completed repo includes more tests (12 total) for colors, Vibe Search, and Sentry
 
 ---
 
@@ -185,9 +186,9 @@ import { test, expect } from "@playwright/test";
 test("smoke test: load page, verify color card, swipe once", async ({ page }) => {
   await page.goto("/");
 
-  await page.waitForSelector('[class*="swipe"]', { timeout: 10_000 });
+  await page.waitForSelector(".card", { timeout: 10_000 });
 
-  const card = page.locator('[class*="swipe-card"]').first();
+  const card = page.locator(".deck .card").first();
   await expect(card).toBeVisible();
 
   const box = await card.boundingBox();
@@ -207,7 +208,7 @@ test("smoke test: load page, verify color card, swipe once", async ({ page }) =>
 Key concepts:
 
 - `page.goto("/")` navigates to the app
-- `waitForSelector` waits for the UI to render before interacting
+- `waitForSelector(".card")` waits for a color card to render before interacting
 - `boundingBox` + mouse actions simulate a real drag/swipe gesture
 - The `webServer` config in `playwright.config.ts` automatically starts `pnpm dev` before tests
 

@@ -170,7 +170,7 @@ We test the Hono API routes using `app.request()` — no server needed:
 
 ```ts
 import { describe, expect, it, vi } from "vitest";
-import app from "../../src/worker";
+import { app } from "../../src/worker";
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(() => ({
@@ -245,14 +245,15 @@ pnpm test
 
 Checkpoint:
 
-- All 5 tests pass (3 API + 2 client)
+- The tests you wrote so far all pass (3 API + 2 client)
+- The completed repo includes more tests (12 total) for colors, Vibe Search, and Sentry
 
 <!--
 Client tests are the simplest tests to write. They test pure functions — no mocking, no async, no server.
 
 imageUrl is a pure function: given an input, it always returns the same output. These are the easiest things to test and the most valuable — they catch regressions when someone changes a URL pattern.
 
-Have students run pnpm test and verify all 5 tests pass.
+Have students run pnpm test and verify the tests they wrote so far pass (3 API + 2 client).
 
 [~3 min, students write and run tests]
 -->
@@ -297,9 +298,9 @@ import { test, expect } from "@playwright/test";
 
 test("smoke test: load page, verify color card, swipe once", async ({ page }) => {
   await page.goto("/");
-  await page.waitForSelector('[class*="swipe"]', { timeout: 10_000 });
+  await page.waitForSelector(".card", { timeout: 10_000 });
 
-  const card = page.locator('[class*="swipe-card"]').first();
+  const card = page.locator(".deck .card").first();
   await expect(card).toBeVisible();
 
   const box = await card.boundingBox();
@@ -309,6 +310,8 @@ test("smoke test: load page, verify color card, swipe once", async ({ page }) =>
   await page.mouse.down();
   await page.mouse.move(box.x + box.width + 300, box.y + box.height / 2, { steps: 10 });
   await page.mouse.up();
+
+  await page.waitForTimeout(500);
 });
 ```
 
@@ -323,8 +326,8 @@ pnpm test:e2e
 Walk through the test:
 
 1. page.goto("/") opens the app
-2. waitForSelector waits for the swipe UI to render
-3. locator finds the first swipe card
+2. waitForSelector waits for a color card to render (`.card`)
+3. locator finds the first card in the deck
 4. boundingBox gets the card's position and size
 5. The mouse.move/down/move/up sequence simulates a drag gesture to the right — a "like" swipe
 
@@ -539,7 +542,10 @@ jobs:
       - uses: pnpm/action-setup@v4
         with: { version: 10 }
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: pnpm }
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: part-2/apps/web/pnpm-lock.yaml
       - run: pnpm install
       - run: pnpm test
       - run: pnpm exec playwright install --with-deps chromium
@@ -560,11 +566,16 @@ jobs:
       - uses: pnpm/action-setup@v4
         with: { version: 10 }
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: pnpm }
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: part-2/apps/web/pnpm-lock.yaml
       - run: pnpm install
       - run: pnpm deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 ```
 
 <!--
@@ -996,7 +1007,7 @@ RUN uv sync --frozen --no-dev
 COPY . .
 
 EXPOSE 8000
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 ---
@@ -1072,8 +1083,11 @@ class: live-terminal-slide
 ```python
 from sentence_transformers import SentenceTransformer
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
-print(f"✓ Loaded model ({model.get_sentence_embedding_dimension()}d embeddings)")
+MODEL_NAME = "all-MiniLM-L6-v2"
+
+model = SentenceTransformer(MODEL_NAME)
+dimension = model.get_embedding_dimension()
+print(f"Loaded model ({dimension}d embeddings)")
 ```
 
 This shifts the download from the first request to `docker build`.
@@ -1084,6 +1098,8 @@ The first request becomes predictable, but the image gets larger because the mod
 ---
 
 # Improved Dockerfile
+
+Update your `Dockerfile`, or compare with the reference `Dockerfile.preload` in the repo.
 
 ```dockerfile 
 FROM ghcr.io/astral-sh/uv:python3.12-trixie-slim
@@ -1102,7 +1118,13 @@ RUN uv run python scripts/preload_model.py
 COPY . .
 
 EXPOSE 8000
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+To build the reference version without editing your starter Dockerfile:
+
+```bash
+docker build -f Dockerfile.preload -t color-vibe-search:preload .
 ```
 
 ---
@@ -1254,6 +1276,8 @@ class: compact
 Add the Render URL and an internal API key as Cloudflare Worker secrets:
 
 ```bash
+cd part-2/apps/web
+
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 # copy this value for Render and Cloudflare
 
@@ -1279,7 +1303,7 @@ The Color Swipe frontend is already wired with a Vibe Search box. It calls
 `POST /api/vibe-search`, but that route does nothing useful until the Worker
 proxies the request to Render.
 
-Add these secrets to the Worker bindings in `src/worker.ts`:
+Add these bindings to the Worker `Bindings` type in `src/worker.ts`:
 
 ```ts
 type Bindings = {
@@ -1288,6 +1312,9 @@ type Bindings = {
   SUPABASE_KEY?: string;
   VIBE_SEARCH_URL?: string;
   VIBE_SEARCH_API_KEY?: string;
+  SENTRY_DSN?: string;
+  SENTRY_ENVIRONMENT?: string;
+  SENTRY_DEBUG_ENABLED?: string;
 };
 ```
 
@@ -1301,21 +1328,29 @@ Then add this route in `src/worker.ts`:
 
 ```ts
 app.post("/api/vibe-search", async (c) => {
-  if (!c.env.VIBE_SEARCH_URL || !c.env.VIBE_SEARCH_API_KEY) {
+  const { VIBE_SEARCH_URL, VIBE_SEARCH_API_KEY } = c.env;
+  if (!VIBE_SEARCH_URL) {
     return c.json({ error: "Vibe Search is not configured" }, 503);
   }
 
   const body = await c.req.json();
-  const res = await fetch(`${c.env.VIBE_SEARCH_URL}/api/vibe-search`, {
+  const res = await fetch(`${VIBE_SEARCH_URL}/api/vibe-search`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Internal-Api-Key": c.env.VIBE_SEARCH_API_KEY,
+      ...(VIBE_SEARCH_API_KEY
+        ? { "X-Internal-Api-Key": VIBE_SEARCH_API_KEY }
+        : {}),
     },
     body: JSON.stringify(body),
   });
   if (!res.ok) return c.json({ error: "Search service unavailable" }, 502);
-  return c.json(await res.json());
+  return new Response(res.body, {
+    status: res.status,
+    headers: {
+      "Content-Type": res.headers.get("Content-Type") ?? "application/json",
+    },
+  });
 });
 ```
 
@@ -1328,6 +1363,7 @@ app.post("/api/vibe-search", async (c) => {
 # Let's redeploy color-swipe
 
 ```bash
+cd part-2/apps/web
 pnpm run deploy
 ```
 
@@ -1362,21 +1398,30 @@ Render dashboard → Environment → Add Environment Variable
 VIBE_SEARCH_API_KEY=<generated value>
 ```
 
-Then verify it in FastAPI:
+Then verify it in FastAPI (`app/api/dependencies.py` and `app/api/routes.py`):
 
 ```py
-import os
 from fastapi import Depends, Header, HTTPException
-VIBE_SEARCH_API_KEY = os.environ["VIBE_SEARCH_API_KEY"]
+
+from app.core.config import get_settings
+
+
 def require_internal_api_key(
     x_internal_api_key: str | None = Header(default=None),
-):
-    if x_internal_api_key != VIBE_SEARCH_API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid API key")
+) -> None:
+    expected_api_key = get_settings().vibe_search_api_key
 
-@app.post("/api/vibe-search", dependencies=[Depends(require_internal_api_key)])
-def vibe_search(request: VibeSearchRequest):
-    ...
+    if not expected_api_key:
+        return
+
+    if x_internal_api_key != expected_api_key:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+```
+
+```py
+@router.post("/vibe-search", dependencies=[Depends(require_internal_api_key)])
+def vibe_search(request: VibeSearchRequest) -> VibeSearchResponse:
+    return search_colors(request.query)
 ```
 
 Save, redeploy `vibe-search`, then redeploy the Worker.
@@ -1409,12 +1454,19 @@ In production, each service runs on its own platform (Workers, Render, Supabase)
 ---
 ---
 
-# `docker-compose.yml`
+# `part-2/docker-compose.yaml`
+
+Run Compose from the `part-2/` directory:
+
+```bash
+cd part-2
+docker compose up
+```
 
 ```yaml
 services:
   vibe-search:
-    build: ./part-2/apps/vibe-search
+    build: ./apps/vibe-search
     ports:
       - "8000:8000"
 
@@ -1437,7 +1489,7 @@ volumes:
 
 # What Compose gives you
 
-- **`build: ./part-2/apps/vibe-search`**: builds the Dockerfile for you
+- **`build: ./apps/vibe-search`**: builds the Dockerfile for you (paths are relative to `part-2/`)
 - **`image: postgres:16`**: pulls a pre-built image (this is what Supabase runs under the hood)
 - **`volumes`**: named volumes persist data across container restarts
 - **Networking**: services in the same Compose file can reach each other by name (`postgres:5432`)
@@ -1457,6 +1509,7 @@ class: compact live-terminal-slide
 <!--
 Demo script:
 
+cd part-2
 docker compose up
 
 In another terminal:
@@ -1729,6 +1782,7 @@ SENTRY_ENVIRONMENT=development
 Production, set Cloudflare secrets:
 
 ```bash
+cd part-2/apps/web
 pnpm wrangler secret put SENTRY_DSN
 pnpm wrangler secret put SENTRY_ENVIRONMENT
 ```
@@ -1736,6 +1790,7 @@ pnpm wrangler secret put SENTRY_ENVIRONMENT
 Then redeploy the Worker:
 
 ```bash
+cd part-2/apps/web
 pnpm run deploy
 ```
 
@@ -1792,6 +1847,7 @@ return c.json({
 Then deploy:
 
 ```bash
+cd part-2/apps/web
 pnpm run deploy
 ```
 
@@ -1848,8 +1904,10 @@ if (!res.ok) {
     scope.setTag("upstream_status", String(res.status));
     scope.setContext("vibe_search", {
       request_path: c.req.path,
+      upstream_url: `${VIBE_SEARCH_URL}/api/vibe-search`,
       upstream_status: res.status,
-      query: body.query,
+      upstream_status_text: res.statusText,
+      query: typeof body.query === "string" ? body.query : undefined,
     });
     Sentry.captureException(new Error("Vibe Search upstream request failed"));
   });
@@ -1923,6 +1981,7 @@ return new Response(res.body, {
 Redeploy:
 
 ```bash
+cd part-2/apps/web
 pnpm run deploy
 ```
 

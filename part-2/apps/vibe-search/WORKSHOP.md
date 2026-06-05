@@ -91,16 +91,28 @@ pushes to `main` or `master` to deploy automatically.
 
 ## Lockdown patch
 
-The starter service is intentionally public so the first local and Render demos
-can call it directly. Later, add the internal API key check from the slides:
+The service allows unauthenticated requests until `VIBE_SEARCH_API_KEY` is set.
+Once you add that environment variable on Render, the existing dependency in
+`app/api/dependencies.py` starts enforcing the `X-Internal-Api-Key` header.
+
+The route in `app/api/routes.py` is already wired like this:
 
 ```python
-from fastapi import Depends
+from fastapi import APIRouter, Depends
 
 from app.api.dependencies import require_internal_api_key
+from app.models import VibeSearchRequest, VibeSearchResponse
+from app.services.vibe_search import search_colors
+
+router = APIRouter(prefix="/api")
 
 
-@app.post("/api/vibe-search", dependencies=[Depends(require_internal_api_key)])
-def vibe_search(request: VibeSearchRequest):
-    ...
+@router.post("/vibe-search", dependencies=[Depends(require_internal_api_key)])
+def vibe_search(request: VibeSearchRequest) -> VibeSearchResponse:
+    return search_colors(request.query)
 ```
+
+Set the same generated key in both places:
+
+- Render: `VIBE_SEARCH_API_KEY`
+- Cloudflare Worker: `VIBE_SEARCH_API_KEY` (via `pnpm wrangler secret put`)
