@@ -36,6 +36,14 @@ def client() -> TestClient:
     return TestClient(app)
 
 
+def auth_headers() -> dict[str, str]:
+    api_key = get_settings().vibe_search_api_key
+    if not api_key:
+        return {}
+
+    return {"X-Internal-Api-Key": api_key}
+
+
 def test_health_endpoint_returns_service_metadata():
     response = client().get("/api/health")
 
@@ -64,13 +72,21 @@ def test_debug_sentry_endpoint_throws_when_enabled(monkeypatch):
 
 
 def test_empty_query_is_rejected():
-    response = client().post("/api/vibe-search", json={"query": "   "})
+    response = client().post(
+        "/api/vibe-search",
+        json={"query": "   "},
+        headers=auth_headers(),
+    )
 
     assert response.status_code == 422
 
 
 def test_vibe_search_returns_ranked_color_results():
-    response = client().post("/api/vibe-search", json={"query": "forest trail"})
+    response = client().post(
+        "/api/vibe-search",
+        json={"query": "forest trail"},
+        headers=auth_headers(),
+    )
 
     assert response.status_code == 200
     body = response.json()
@@ -83,7 +99,11 @@ def test_vibe_search_returns_ranked_color_results():
 
 
 def test_ocean_breeze_ranks_blue_or_teal_near_the_top():
-    response = client().post("/api/vibe-search", json={"query": "ocean breeze"})
+    response = client().post(
+        "/api/vibe-search",
+        json={"query": "ocean breeze"},
+        headers=auth_headers(),
+    )
 
     assert response.status_code == 200
     top_names = [result["name"] for result in response.json()["results"][:3]]

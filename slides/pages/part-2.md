@@ -1599,7 +1599,21 @@ The big idea is simple: when an exception happens in production, your app sends 
 
 Logs are still useful, but Sentry is different because it is organized around actual failures. You do not need to be tailing logs at the exact moment something breaks.
 
+Next slide is an interactive Sentry UI walkthrough.
+
 [~1 min]
+-->
+---
+layout: iframe
+url: https://demo.arcade.software/IUuJGLUBdRIa2yBFE35v?embed
+---
+
+<!--
+Walk through the Arcade demo: create a project, pick a platform, and note where to copy the DSN on the setup screen.
+
+Remind students that on the next slide they will create two projects (Worker + FastAPI), not just the React example shown in the demo.
+
+[~3 min]
 -->
 
 ---
@@ -1615,8 +1629,6 @@ Create **two projects**:
 | --- | --- | --- |
 | Cloudflare Worker | Cloudflare Workers | `color-swipe-worker` |
 | FastAPI service | Python / FastAPI | `vibe-search-api` |
-
-Why two projects? Cleaner issue lists, clearer stack traces, and less confusion when one service breaks.
 
 <!--
 Walk students through creating the two projects.
@@ -1731,42 +1743,42 @@ Students should not paste the Worker DSN here. If events from Python show up in 
 # Set up Sentry for Cloudflare Workers
 
 ```bash
-pnpm add @sentry/cloudflare
+pnpm add @sentry/cloudflare @sentry/hono
 ```
 
 Add to `wrangler.jsonc`:
 
 ```jsonc
 {
-  "compatibility_flags": ["nodejs_compat"]
+  "compatibility_flags": ["nodejs_compat"],
+  "upload_source_maps": true
 }
 ```
 
-Wrap your worker entry point:
+Add Hono middleware as the first middleware on your app:
 
 ```ts
 import * as Sentry from "@sentry/cloudflare";
+import { sentry } from "@sentry/hono/cloudflare";
 
-export default Sentry.withSentry(
-  (env) => ({
-    dsn: env.SENTRY_DSN,
+app.use(
+  sentry(app, (env) => ({
+    dsn: env.SENTRY_DSN ?? "",
+    enabled: Boolean(env.SENTRY_DSN),
     environment: env.SENTRY_ENVIRONMENT ?? "production",
     tracesSampleRate: 0.1,
-  }),
-  {
-    async fetch(request, env, ctx) {
-      return app.fetch(request, env, ctx);
-    },
-  } satisfies ExportedHandler<Env>
+  })),
 );
+
+export default app;
 ```
 
 Use the DSN from the `color-swipe-worker` Sentry project.
 
 <!--
-The Cloudflare SDK wraps the Worker handler. That lets Sentry see unhandled exceptions that happen while the Worker handles requests.
+For Hono apps, middleware is the preferred integration because it runs inside the framework request pipeline. The older `Sentry.withSentry(...)` wrapper still works for plain Workers, but we do not want both at once.
 
-We also add compatibility flags if required by the SDK version. The current workshop app already has Wrangler configuration, so students only need to add the missing Sentry-related pieces.
+`upload_source_maps` is optional for basic error capture, but it makes production stack traces readable. Wrangler generates and uploads source maps on `wrangler deploy`, not during local `wrangler dev`.
 
 [~3 min]
 -->
@@ -1809,65 +1821,55 @@ If they skip SENTRY_ENVIRONMENT, the code defaults to production. The important 
 ---
 ---
 
-# Add a safe test route
+# Break Vibe Search on purpose
 
-Both apps include a route that deliberately throws only when enabled:
+We are going to create a realistic production bug.
 
-```python
-@router.get("/api/debug-sentry")
-def trigger_error():
-    if not get_settings().sentry_debug_enabled:
-        raise HTTPException(status_code=404, detail="Not found")
-
-    raise RuntimeError("Testing Sentry integration")
-```
+In `src/worker.ts`, temporarily replace the final proxy response:
 
 ```ts
-app.get("/api/debug-sentry", (c) => {
-  if (c.env.SENTRY_DEBUG_ENABLED !== "true") return c.notFound();
-
-  throw new Error("Testing Sentry integration");
+return new Response(res.body, {
+  status: res.status,
+  headers: {
+    "Content-Type": res.headers.get("Content-Type") ?? "application/json",
+  },
 });
 ```
 
-Default state: disabled, returns 404.
-
-<!--
-This is safer than leaving a public URL that anyone can use to generate errors.
-
-The route exists so students can verify the integration in a controlled way. Enable it only briefly, trigger the error, then disable it again.
-
-[~2 min]
--->
-
 ---
 ---
 
-# Verify Sentry
+# Break Vibe Search on purpose
 
-FastAPI:
+Replace it with this buggy version:
 
-```bash
-SENTRY_DEBUG_ENABLED=true uv run uvicorn app.main:app --reload
-curl http://localhost:8000/api/debug-sentry
+```ts
+const data = (await res.json()) as {
+  query: string;
+  model: string;
+  matches: unknown[];
+  results: unknown[];
+};
+const topMatch = data.matches[0];
+
+return c.json({
+  ...data,
+  results: [topMatch],
+});
 ```
 
-Cloudflare Worker:
+Then deploy:
 
 ```bash
-pnpm wrangler secret put SENTRY_DEBUG_ENABLED
 pnpm run deploy
-curl https://your-worker.workers.dev/api/debug-sentry
 ```
 
-Then open Sentry -> **Issues**.
-
 <!--
-For the Worker secret, paste true when Wrangler prompts.
+This bug is realistic: the Worker and FastAPI service disagree on the response shape.
 
-After verifying the event, set SENTRY_DEBUG_ENABLED to false or delete the secret. The endpoint should go back to returning 404.
+FastAPI returns `results`, but the Worker accidentally reads `matches`. This is a common integration mistake when a frontend or proxy is updated against the wrong API contract.
 
-Sentry events are usually quick, but it can take a short moment for the issue to appear.
+This should throw on `data.matches[0]`, giving Sentry a stack trace that points at the exact broken line.
 
 [~3 min]
 -->
@@ -1875,28 +1877,140 @@ Sentry events are usually quick, but it can take a short moment for the issue to
 ---
 ---
 
-# What should appear?
+# Trigger the bug from the app
 
-In Sentry Issues, open the new error.
+Open your deployed Color Swipe app.
 
-You should see:
+Use Vibe Search:
 
-- The full stack trace
-- The request URL, method, and headers
-- The Python/Node version and environment
-- The first seen / last seen timestamps
-- How many times the same error happened
+```text
+ocean breeze
+```
 
-If nothing appears, check the DSN, redeploy, then trigger the route again.
+What the user sees:
+
+- Search starts
+- The result does not appear
+- The UI falls back to “Vibe Search comes online after Part 2”
+
+Now open Sentry -> `color-swipe-worker` -> **Issues**.
 
 <!--
-For FastAPI, the issue should appear in vibe-search-api.
+The point here is that the user-facing symptom is vague. The app does not tell you about the response-shape mismatch.
 
-For the Worker, the issue should appear in color-swipe-worker.
-
-If the event appears in the wrong project, the app has the wrong DSN. If no event appears, check that SENTRY_DSN is configured in the environment that is actually running the app.
+Sentry should point at the Worker line where `data.matches[0]` crashed.
 
 [~2 min]
+-->
+
+---
+---
+
+# Capture useful context
+
+The Worker still records upstream failures before returning a safe response:
+
+```ts
+if (!res.ok) {
+  Sentry.withScope((scope) => {
+    scope.setTag("upstream_service", "vibe-search");
+    scope.setTag("upstream_status", String(res.status));
+    scope.setContext("vibe_search", {
+      request_path: c.req.path,
+      upstream_status: res.status,
+      query: body.query,
+    });
+    Sentry.captureException(new Error("Vibe Search upstream request failed"));
+  });
+
+  return c.json({ error: "Search service unavailable" }, 502);
+}
+```
+
+The deliberate bug is different. It crashes after the upstream request succeeds:
+
+```ts
+const data = (await res.json()) as {
+  matches: unknown[];
+};
+const topMatch = data.matches[0];
+```
+
+<!--
+We are not leaking the API key or internal headers into Sentry.
+
+For genuine upstream failures, we record enough to debug: route, upstream service, upstream status, and the search query that triggered it.
+
+For the deliberate response-shape bug, the most useful signal is the source-mapped stack trace pointing at `data.matches[0]`.
+
+[~2 min]
+-->
+
+---
+---
+
+# Read the Sentry issue
+
+In the Sentry issue, look for:
+
+| Field | Clue |
+| --- | --- |
+| **Issue title** | `Cannot read properties of undefined` |
+| **Stack trace** | `src/worker.ts`, the `data.matches[0]` line |
+| **HTTP request** | `POST /api/vibe-search` |
+| **Body** | `{ "query": "ocean breeze" }` |
+| **Breadcrumbs** | Successful fetch to the Render Vibe Search endpoint |
+
+What does the stack trace tell us? The upstream service replied, but the Worker expected the wrong JSON field.
+
+<!--
+This is the debugging moment.
+
+The key clue is that the crash happens after the fetch, not during the fetch. The Render service responded, then our Worker trusted the wrong TypeScript shape and tried to read a property that does not exist.
+
+Students should compare the FastAPI response shape (`results`) with the Worker bug (`matches`).
+
+[~3 min]
+-->
+
+---
+---
+
+# Fix and verify
+
+Change the Worker code back to returning the upstream response:
+
+```ts
+return new Response(res.body, {
+  status: res.status,
+  headers: {
+    "Content-Type": res.headers.get("Content-Type") ?? "application/json",
+  },
+});
+```
+
+Redeploy:
+
+```bash
+pnpm run deploy
+```
+
+Try Vibe Search again with `ocean breeze`.
+
+Checkpoint:
+
+- The UI shows a color result
+- No new Sentry issue appears for the fixed request
+- The old Sentry issue can be marked **Resolved**
+
+<!--
+This closes the loop: observe user symptom, inspect Sentry, form a hypothesis, fix the code, redeploy, verify, and resolve the issue.
+
+The header-mismatch bug is also realistic, but it needs more inference because Sentry mainly shows "upstream 401". The response-shape bug is better for a workshop because the stack trace points directly at the faulty line.
+
+Keep the disabled /api/debug-sentry route as an instructor fallback only. The main demo should be this real Vibe Search contract bug.
+
+[~4 min]
 -->
 
 ---
@@ -1911,6 +2025,14 @@ If the event appears in the wrong project, the app has the wrong DSN. If no even
 | **Breadcrumbs** | What happened before the error (HTTP requests, logs) |
 | **Performance** | Slowest endpoints, p95 response times |
 | **Alerts** | Email or Slack notification when error rate spikes |
+
+If stack traces look minified in production, check that `upload_source_maps` is enabled and redeploy. Local `wrangler dev` does not upload source maps.
+
+<!--
+Source maps are a production deploy improvement, not a blocker for the workshop demo. Basic capture still works without them.
+
+[~1 min]
+-->
 
 ---
 ---

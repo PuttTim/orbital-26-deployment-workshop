@@ -1,5 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
+import type { MiddlewareHandler } from "hono";
 import { app } from "../../src/worker";
+import * as Sentry from "@sentry/cloudflare";
 
 const mockSelect = vi.fn();
 const mockOrder = vi.fn();
@@ -11,6 +13,29 @@ vi.mock("@supabase/supabase-js", () => ({
 	createClient: vi.fn(() => ({
 		from: mockFrom,
 	})),
+}));
+
+const sentryScope = vi.hoisted(() => ({
+	setTag: vi.fn(),
+	setContext: vi.fn(),
+}));
+
+vi.mock("@sentry/cloudflare", () => ({
+	captureException: vi.fn(),
+	withScope: vi.fn((callback) =>
+		callback({
+			setTag: sentryScope.setTag,
+			setContext: sentryScope.setContext,
+		}),
+	),
+}));
+
+vi.mock("@sentry/hono/cloudflare", () => ({
+	sentry: vi.fn(
+		(): MiddlewareHandler => async (_c, next) => {
+			await next();
+		},
+	),
 }));
 
 describe("GET /api/health", () => {
@@ -80,6 +105,8 @@ describe("GET /api/colors", () => {
 describe("POST /api/vibe-search", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		sentryScope.setTag.mockClear();
+		sentryScope.setContext.mockClear();
 	});
 
 	it("returns unavailable when Vibe Search is not configured", async () => {
@@ -133,7 +160,7 @@ describe("POST /api/vibe-search", () => {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
-					"X-API-Key": "secret-key",
+					"X-Internal-Api-Key": "secret-key",
 				},
 				body: JSON.stringify({ query: "ocean sunrise" }),
 			},
@@ -177,6 +204,54 @@ describe("POST /api/vibe-search", () => {
 				},
 				body: JSON.stringify({ query: "forest trail" }),
 			},
+		);
+
+		vi.unstubAllGlobals();
+	});
+
+	it("captures upstream failures and returns a safe error", async () => {
+		const fetchMock = vi.fn().mockResolvedValue(
+			new Response(JSON.stringify({ detail: "Invalid API key" }), {
+				status: 401,
+				statusText: "Unauthorized",
+				headers: { "Content-Type": "application/json" },
+			}),
+		);
+		vi.stubGlobal("fetch", fetchMock);
+
+		const res = await app.request(
+			"/api/vibe-search",
+			{
+				method: "POST",
+				body: JSON.stringify({ query: "ocean breeze" }),
+				headers: { "Content-Type": "application/json" },
+			},
+			{
+				VIBE_SEARCH_URL: "https://vibe-search.example.com",
+				VIBE_SEARCH_API_KEY: "secret-key",
+			},
+		);
+		const body = await res.json();
+
+		expect(res.status).toBe(502);
+		expect(body).toEqual({ error: "Search service unavailable" });
+		expect(Sentry.captureException).toHaveBeenCalledWith(
+			expect.objectContaining({
+				message: "Vibe Search upstream request failed",
+			}),
+		);
+		expect(sentryScope.setTag).toHaveBeenCalledWith(
+			"upstream_service",
+			"vibe-search",
+		);
+		expect(sentryScope.setTag).toHaveBeenCalledWith("upstream_status", "401");
+		expect(sentryScope.setContext).toHaveBeenCalledWith(
+			"vibe_search",
+			expect.objectContaining({
+				request_path: "/api/vibe-search",
+				upstream_status: 401,
+				query: "ocean breeze",
+			}),
 		);
 
 		vi.unstubAllGlobals();

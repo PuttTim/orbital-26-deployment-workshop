@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { createClient } from "@supabase/supabase-js";
 import * as Sentry from "@sentry/cloudflare";
+import { sentry } from "@sentry/hono/cloudflare";
 
 type Bindings = {
   ASSETS: { fetch: typeof fetch };
@@ -14,6 +15,15 @@ type Bindings = {
 };
 
 export const app = new Hono<{ Bindings: Bindings }>();
+
+app.use(
+  sentry(app, (env) => ({
+    dsn: env.SENTRY_DSN ?? "",
+    enabled: Boolean(env.SENTRY_DSN),
+    environment: env.SENTRY_ENVIRONMENT ?? "production",
+    tracesSampleRate: 0.1,
+  })),
+);
 
 app.get("/api/health", (c) => {
   return c.json({ ok: true, service: "color-swipe" });
@@ -95,10 +105,42 @@ app.post("/api/vibe-search", async (c) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(VIBE_SEARCH_API_KEY ? { "X-API-Key": VIBE_SEARCH_API_KEY } : {}),
+      ...(VIBE_SEARCH_API_KEY
+        ? { "X-Internal-Api-Key": VIBE_SEARCH_API_KEY }
+        : {}),
     },
     body: JSON.stringify(body),
   });
+
+  if (!res.ok) {
+    Sentry.withScope((scope) => {
+      scope.setTag("upstream_service", "vibe-search");
+      scope.setTag("upstream_status", String(res.status));
+      scope.setContext("vibe_search", {
+        request_path: c.req.path,
+        upstream_url: `${VIBE_SEARCH_URL}/api/vibe-search`,
+        upstream_status: res.status,
+        upstream_status_text: res.statusText,
+        query: typeof body.query === "string" ? body.query : undefined,
+      });
+      Sentry.captureException(new Error("Vibe Search upstream request failed"));
+    });
+
+    return c.json({ error: "Search service unavailable" }, 502);
+  }
+
+  // const data = (await res.json()) as {
+  //   query: string;
+  //   model: string;
+  //   matches: unknown[];
+  //   results: unknown[];
+  // };
+  // const topMatch = data.matches[0];
+
+  // return c.json({
+  //   ...data,
+  //   results: [topMatch],
+  // });
 
   return new Response(res.body, {
     status: res.status,
@@ -143,21 +185,4 @@ app.get("/api/images/:key", async (c) => {
   });
 });
 
-const handler = {
-  async fetch(request, env, ctx) {
-    return app.fetch(request, env, ctx);
-  },
-} satisfies ExportedHandler<Bindings>;
-
-export default Sentry.withSentry<Bindings>(
-  (env) => {
-    if (!env.SENTRY_DSN) return undefined;
-
-    return {
-      dsn: env.SENTRY_DSN,
-      environment: env.SENTRY_ENVIRONMENT ?? "production",
-      tracesSampleRate: 0.1,
-    };
-  },
-  handler,
-);
+export default app;
