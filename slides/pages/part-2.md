@@ -1183,8 +1183,6 @@ Expected output:
 If the build is slow, keep the static command slide visible, explain that PyTorch and model layers are the expensive part, and remind students that large production models often belong in a volume, cache, or external model service instead.
 -->
 
----
----
 
 ---
 layout: section
@@ -1369,9 +1367,7 @@ Then verify it in FastAPI:
 ```py
 import os
 from fastapi import Depends, Header, HTTPException
-
 VIBE_SEARCH_API_KEY = os.environ["VIBE_SEARCH_API_KEY"]
-
 def require_internal_api_key(
     x_internal_api_key: str | None = Header(default=None),
 ):
@@ -1384,71 +1380,6 @@ def vibe_search(request: VibeSearchRequest):
 ```
 
 Save, redeploy `vibe-search`, then redeploy the Worker.
-
----
----
-
-<CheckpointBadge />
-
-# Hackers begone!
-
-Direct public request should fail:
-
-```bash
-curl -X POST https://<your-service>.onrender.com/api/vibe-search \
-  -H "Content-Type: application/json" \
-  -d '{"query": "ocean breeze"}'
-```
-
----
-class: compact stacked-cicd scrollable-code
----
-
-# CI/CD for containers
-
-Same pattern as the Color Swipe workflow — but this time we build and push a Docker image instead of deploying to Workers.
-
-```yaml {*}{maxHeight:'50vh'}
-# .github/workflows/test-vibe-search.yaml
-name: Test Vibe Search
-on:
-  workflow_dispatch:
-  push:
-    branches: [main, master]
-    paths:
-      - "part-2/apps/vibe-search/**"
-      - ".github/workflows/test-vibe-search.yaml"
-  pull_request:
-    paths:
-      - "part-2/apps/vibe-search/**"
-      - ".github/workflows/test-vibe-search.yaml"
-
-permissions:
-  contents: read
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: part-2/apps/vibe-search
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8.2.0
-        with:
-          enable-cache: true
-          cache-dependency-glob: part-2/apps/vibe-search/uv.lock
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - run: uv sync --dev --frozen
-      - run: uv run pytest
-```
 
 
 ---
