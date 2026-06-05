@@ -91,6 +91,41 @@ def test_ocean_breeze_ranks_blue_or_teal_near_the_top():
     assert "Teal" in top_names
 
 
+def test_vibe_search_rejects_missing_or_wrong_internal_api_key(monkeypatch):
+    monkeypatch.setenv("VIBE_SEARCH_API_KEY", "secret-value")
+    get_settings.cache_clear()
+
+    try:
+        for headers in ({}, {"X-Internal-Api-Key": "wrong-value"}):
+            response = client().post(
+                "/api/vibe-search",
+                json={"query": "ocean breeze"},
+                headers=headers,
+            )
+
+            assert response.status_code == 401
+    finally:
+        get_settings.cache_clear()
+
+
+def test_vibe_search_accepts_matching_internal_api_key(monkeypatch):
+    monkeypatch.setenv("VIBE_SEARCH_API_KEY", "secret-value")
+    get_settings.cache_clear()
+
+    try:
+        response = client().post(
+            "/api/vibe-search",
+            json={"query": "ocean breeze"},
+            headers={"X-Internal-Api-Key": "secret-value"},
+        )
+    finally:
+        get_settings.cache_clear()
+
+    assert response.status_code == 200
+    top_names = [result["name"] for result in response.json()["results"][:3]]
+    assert "Ocean Blue" in top_names
+
+
 def test_internal_api_key_dependency_rejects_missing_or_wrong_key(monkeypatch):
     monkeypatch.setenv("VIBE_SEARCH_API_KEY", "secret-value")
     get_settings.cache_clear()

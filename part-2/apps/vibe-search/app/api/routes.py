@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
+from app.api.dependencies import require_internal_api_key
 from app.core.config import get_settings
 from app.models import VibeSearchRequest, VibeSearchResponse
 from app.services.vibe_search import search_colors
@@ -20,6 +21,6 @@ def debug_sentry() -> None:
     raise RuntimeError("Testing Sentry integration from FastAPI")
 
 
-@router.post("/vibe-search")
+@router.post("/vibe-search", dependencies=[Depends(require_internal_api_key)])
 def vibe_search(request: VibeSearchRequest) -> VibeSearchResponse:
     return search_colors(request.query)

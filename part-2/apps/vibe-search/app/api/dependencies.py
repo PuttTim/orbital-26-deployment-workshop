@@ -9,7 +9,7 @@ def require_internal_api_key(
     expected_api_key = get_settings().vibe_search_api_key
 
     if not expected_api_key:
-        raise HTTPException(status_code=500, detail="VIBE_SEARCH_API_KEY is not configured")
+        return
 
     if x_internal_api_key != expected_api_key:
         raise HTTPException(status_code=401, detail="Invalid API key")
