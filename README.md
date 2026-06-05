@@ -14,17 +14,18 @@ In this two-part workshop, we'll take an app from localhost to the real internet
 | Starter repo | [hckr.cc/orbital-deployment-26](https://hckr.cc/orbital-deployment-26) |
 | Slide deck | [hckr.cc/orbital-deployment-slides](https://hckr.cc/orbital-deployment-slides) |
 | Part 1 step-by-step | [`part-1/WORKSHOP.md`](part-1/WORKSHOP.md) |
+| Part 2 step-by-step | [`part-2/WORKSHOP.md`](part-2/WORKSHOP.md) |
 
 <img src="slides/public/qr/orbital-deployment-slides-qr-code.webp" alt="Slide deck QR code" width="160" />
 
 ## Schedule
 
-- **Part 1:** Saturday, 30 May 2026, 1:00pm to 3:00pm — deploy from localhost to the internet ([`part-1/WORKSHOP.md`](part-1/WORKSHOP.md))
-- **Part 2:** Saturday, 6 June 2026, 10:00am to 12:00pm — CI/CD, testing, Docker, and production-ready deployment (builds on Part 1)
+- **Part 1:** Saturday, 30 May 2026, 1:00pm to 3:00pm. Deploy from localhost to the internet ([`part-1/WORKSHOP.md`](part-1/WORKSHOP.md))
+- **Part 2:** Saturday, 6 June 2026, 10:00am to 12:00pm. Testing, CI/CD, Docker, and monitoring (builds on Part 1)
 
-Missed Part 1 live? You can catch up on-demand via [`part-1/WORKSHOP.md`](part-1/WORKSHOP.md) before Part 2.
+Missed Part 1 live? Catch up via [`part-1/WORKSHOP.md`](part-1/WORKSHOP.md) before Part 2.
 
-**Important:** Part 2 code and slides are not in the repo yet. If you fork during Part 1, you will need to **sync your fork with upstream** before Part 2 to get the new materials. See [Get Part 2 updates](#get-part-2-updates) below.
+If you forked during Part 1, **sync your fork with upstream** so you have the latest `part-2/` materials. See [Get Part 2 updates](#get-part-2-updates).
 
 ## Part 1
 
@@ -42,18 +43,32 @@ Hands-on guide: [`part-1/WORKSHOP.md`](part-1/WORKSHOP.md)
 
 ## Part 2
 
-For Part 2 of the workshop, we will build on the deployed app from Part 1 and focus on making deployment more reliable and production-ready.
+Part 2 builds on your deployed Color Swipe app from Part 1. You keep the Cloudflare Worker + Supabase stack, then add automated testing, CI/CD, a containerised Python microservice, and error monitoring.
 
 We will cover:
 
-- Testing deployed applications
-- Unit testing
-- CI/CD with GitHub Actions
-- Containerisation with Docker
-- Deploying a containerised backend
-- Optional: Monitoring and telemetry
+- **Testing:** Vitest unit tests, Playwright E2E smoke tests
+- **CI/CD:** GitHub Actions to test and deploy on every push
+- **Containers:** Docker images for a FastAPI vibe-search service
+- **Deploy:** Render for the Python service, Worker proxy for the frontend
+- **Local dev:** Docker Compose for multiple services
+- **Monitoring:** Sentry for Worker and FastAPI errors
 
-You must complete Part 1 on your own fork before Part 2. Part 2 exercises are not in the repo yet; sync your fork with upstream before the session to get them.
+### What you build
+
+```
+Browser -> Cloudflare Worker (React + Hono API) -> Supabase
+                    |
+              Render (FastAPI vibe-search + ML model)
+```
+
+- [`part-2/apps/web/`](part-2/apps/web/) -- Color Swipe with tests, GitHub Actions workflow template, Vibe Search UI, and Sentry on the Worker
+- [`part-2/apps/vibe-search/`](part-2/apps/vibe-search/) -- FastAPI service that ranks colors by sentence similarity (`all-MiniLM-L6-v2`)
+- [`part-2/docker-compose.yaml`](part-2/docker-compose.yaml) -- run vibe-search + local Postgres together
+
+Hands-on guide: [`part-2/WORKSHOP.md`](part-2/WORKSHOP.md)
+
+You must complete Part 1 on your own fork before Part 2.
 
 ## Getting started
 
@@ -70,9 +85,13 @@ You must complete Part 1 on your own fork before Part 2. Part 2 exercises are no
 ### Before Part 2
 
 - Completed Part 1 on **your fork** (deployed Worker + Supabase wired up)
-- **Synced your fork with upstream** so Part 2 code is present locally (see [Get Part 2 updates](#get-part-2-updates))
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or equivalent) installed
-- Same fork from Part 1 (CI/CD needs your repo)
+- **Synced your fork with upstream** so `part-2/` is present locally (see [Get Part 2 updates](#get-part-2-updates))
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) or [OrbStack](https://orbstack.dev/) installed
+- [Render](https://render.com/) account (free tier) for deploying vibe-search
+- [Sentry](https://sentry.io/) account (free tier) for error monitoring
+- Same fork from Part 1 (CI/CD pushes to your GitHub repo)
+
+Optional for local Python dev: [uv](https://docs.astral.sh/uv/) (`curl -LsSf https://astral.sh/uv/install.sh | sh`). Docker covers the container sections without a local Python install.
 
 ### Setup checklist
 
@@ -100,9 +119,13 @@ cd orbital-26-deployment-workshop
 
 #### Step C: Repo layout
 
-- [`part-1/`](part-1/) — Color Swipe app and all Part 1 commands (`pnpm dev`, `pnpm deploy`, etc.)
-- [`slides/`](slides/) — Slidev deck (presenters only; participants use the [hosted deck](https://hckr.cc/orbital-deployment-slides))
-- [`part-1/WORKSHOP.md`](part-1/WORKSHOP.md) — follow this during Part 1
+- [`part-1/`](part-1/) -- Color Swipe app and all Part 1 commands (`pnpm dev`, `pnpm deploy`, etc.)
+- [`part-2/apps/web/`](part-2/apps/web/) -- Part 2 Color Swipe app (tests, CI/CD, Vibe Search proxy)
+- [`part-2/apps/vibe-search/`](part-2/apps/vibe-search/) -- FastAPI container service
+- [`part-2/docker-compose.yaml`](part-2/docker-compose.yaml) -- local multi-container setup
+- [`slides/`](slides/) -- Slidev deck (presenters only; participants use the [hosted deck](https://hckr.cc/orbital-deployment-slides))
+- [`part-1/WORKSHOP.md`](part-1/WORKSHOP.md) -- follow this during Part 1
+- [`part-2/WORKSHOP.md`](part-2/WORKSHOP.md) -- follow this during Part 2
 
 #### Step D: Install and run Part 1
 
@@ -118,16 +141,53 @@ Open the local URL Vite prints (typically `http://localhost:5173`).
 
 Continue with [`part-1/WORKSHOP.md`](part-1/WORKSHOP.md) for deploy, Supabase, and storage steps.
 
+#### Step E: Install and run Part 2
+
+After Part 1 and a fork sync, set up the Part 2 web app:
+
+```bash
+cd part-2/apps/web
+pnpm install
+pnpm dev
+```
+
+Run tests:
+
+```bash
+pnpm test                              # Vitest (12 tests in the completed repo)
+pnpm exec playwright install --with-deps chromium
+pnpm test:e2e                          # Playwright smoke test
+```
+
+For the vibe-search service (containers section):
+
+```bash
+cd part-2/apps/vibe-search
+docker build -t color-vibe-search .
+docker run -p 8000:8000 color-vibe-search
+```
+
+Or start vibe-search + Postgres together:
+
+```bash
+cd part-2
+docker compose up
+```
+
+**Checkpoint:** App loads at `http://localhost:5173`, `pnpm test` passes, and `http://localhost:8000/docs` loads after the container starts.
+
+Continue with [`part-2/WORKSHOP.md`](part-2/WORKSHOP.md) for the full Part 2 walkthrough.
+
 #### Get Part 2 updates
 
-Part 2 exercises and repo changes will land on the upstream workshop repo ([`nushackers/orbital-26-deployment-workshop`](https://github.com/nushackers/orbital-26-deployment-workshop)) after Part 1. Your fork does not update automatically.
+Part 2 lives in [`part-2/`](part-2/) on the upstream workshop repo ([`nushackers/orbital-26-deployment-workshop`](https://github.com/nushackers/orbital-26-deployment-workshop)). Your fork does not update automatically.
 
-Sync **on the morning of Part 2** (or the night before), and again if the presenter announces a last-minute push during the session.
+Sync before Part 2 (and again if the presenter announces a last-minute push during the session).
 
 **Option 1: Sync on GitHub (easiest)**
 
 1. Open your fork on GitHub (`github.com/<your-username>/orbital-26-deployment-workshop`)
-2. If GitHub shows **"This branch is X commits behind nushackers/orbital-26-deployment-workshop"**, click **Sync fork** → **Update branch**
+2. If GitHub shows **"This branch is X commits behind nushackers/orbital-26-deployment-workshop"**, click **Sync fork** > **Update branch**
 3. On your machine, pull the updated fork:
 
 ```bash
@@ -151,9 +211,9 @@ git merge upstream/main
 git push origin main
 ```
 
-**Slides:** The hosted deck at [hckr.cc/orbital-deployment-slides](https://hckr.cc/orbital-deployment-slides) will be redeployed when Part 2 slides are ready. You do not need to run the slides locally unless you want to.
+**Slides:** Part 2 slides are on the hosted deck at [hckr.cc/orbital-deployment-slides](https://hckr.cc/orbital-deployment-slides). You do not need to run the slides locally unless you want to.
 
-**Checkpoint:** You see new Part 2 files (e.g. `part-2/` or updated docs) after syncing.
+**Checkpoint:** After syncing, you see `part-2/apps/web/`, `part-2/apps/vibe-search/`, and `part-2/WORKSHOP.md`.
 
 Reference: [GitHub: Syncing a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork)
 
@@ -161,9 +221,9 @@ Reference: [GitHub: Syncing a fork](https://docs.github.com/en/pull-requests/col
 
 During the live session:
 
-1. **Slides:** [hckr.cc/orbital-deployment-slides](https://hckr.cc/orbital-deployment-slides) (or scan the QR above). Part 2 slides will appear here when published; no local slide setup needed.
-2. **Code:** terminal open in your cloned fork (`part-1/` for Part 1; `part-2/` once synced for Part 2)
-3. **Steps:** switch to [`part-1/WORKSHOP.md`](part-1/WORKSHOP.md) (Part 1) or the Part 2 guide when available
+1. **Slides:** [hckr.cc/orbital-deployment-slides](https://hckr.cc/orbital-deployment-slides) (or scan the QR above)
+2. **Code:** terminal open in your cloned fork (`part-1/` for Part 1, `part-2/apps/web/` for Part 2)
+3. **Steps:** [`part-1/WORKSHOP.md`](part-1/WORKSHOP.md) (Part 1) or [`part-2/WORKSHOP.md`](part-2/WORKSHOP.md) (Part 2)
 4. **Before Part 2:** sync your fork with upstream ([Get Part 2 updates](#get-part-2-updates))
 5. **Help:** Zoom chat during session; [Padlet](#got-stuck) after
 
