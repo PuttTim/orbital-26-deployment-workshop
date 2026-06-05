@@ -889,39 +889,6 @@ layout: section
 ---
 ---
 
-# The Docker Ecosystem
-
-<!-- todo: make this side bigger -->
-<DockerStack />
-
-<!--
-Walk through the stack top to bottom with clicks.
-
-"Docker" in industry usually means this whole ecosystem, not just Docker Desktop.
-Each layer is swappable. Desktop app vs OrbStack, Engine vs Podman, but the CLI and image format stay the same.
-
-[~2 min]
--->
-
----
----
-
-# For this workshop
-
-- You installed **Docker Desktop** or **OrbStack**. Either gives you a working `docker` command.
-- Every command in this session works the same on both.
-- **Docker Hub** and **GHCR** are image registries: like npm, but for container images.
-
-<!--
-If someone asks "do I need Docker Desktop specifically?" the answer is no.
-They need a runtime that responds to `docker run`. Desktop and OrbStack both bundle that on Mac.
-
-[~30 sec]
--->
-
----
----
-
 # What is Docker?
 
 - **Docker** is a tool for building and running containers
@@ -930,6 +897,27 @@ They need a runtime that responds to `docker run`. Desktop and OrbStack both bun
 - Each instruction in a Dockerfile creates a **layer**
 - Layers are cached and reused across builds
 
+
+---
+---
+
+# The Docker Ecosystem
+
+<DockerStack />
+
+<!--
+Walk through the stack top to bottom with clicks.
+
+"Docker" in industry often means the whole path from the command you type to the image that runs in production.
+Keep the explanation concrete:
+- Docker Desktop or OrbStack is what students installed.
+- The docker command is what they type.
+- Docker Engine is the background service that builds images and starts containers.
+- The container image is the portable package.
+- Registries store images, but for today's Render flow, Render can build from the repo directly.
+
+[~2 min]
+-->
 ---
 ---
 
@@ -1197,51 +1185,6 @@ If the build is slow, keep the static command slide visible, explain that PyTorc
 
 ---
 ---
-
----
-class: diagram-heavy compact container-vs-vm-slide
----
-
-# How containers actually work
-
-<ContainerVsVm />
-
-<!-- - **VM**: each app carries its own full operating system (Guest OS per VM).
-- **Container**: apps share the host's OS kernel through Docker. No Guest OS per app. -->
-
-| | VM | Container |
-| --- | --- | --- |
-| Startup time | Minutes | Milliseconds |
-| Size | GBs | MBs to low GBs |
-
-<!--
-Point at the diagram: six apps on one Host OS vs three VMs each with their own Guest OS.
-Containers are not VMs. They share the host kernel.
-
-[~1.5 min]
--->
-
----
----
-
-# Containers underneath the hood
-
-- **What it can see**: a container only sees its own processes and files, not yours or another container's.
-- **What it can use**: the OS caps each container's CPU and memory, so one container can't starve the rest.
-- **Its files**: the image is read-only. Writes go to a thin throwaway layer on top, discarded when the container stops.
-
-Containers are natively a **Linux** feature. Docker on macOS and Windows runs a small hidden Linux VM in the background.
-
-
-
-<!--
-Technically Windows can run containers using HyperV
-Orbstack uses Docker Engine but provides an optimised Linux VM to run images faster
-For the curious: visibility = namespaces, resource caps = cgroups, layered files = OverlayFS.
-This ties into the platform quirks appendix.
-
-[~1.5 min]
--->
 
 ---
 layout: section
@@ -1896,6 +1839,51 @@ Save it as a GitHub Actions secret named RENDER_DEPLOY_HOOK_URL.
 
 The deploy workflow passes imgURL so Render deploys the commit-tagged image, not just whatever latest happens to mean.
 If the GHCR package is private, either make it public or configure private registry credentials in Render.
+-->
+
+---
+class: diagram-heavy compact container-vs-vm-slide
+---
+
+# Appendix: How containers actually work
+
+<ContainerVsVm />
+
+| | Virtual machine | Container |
+| --- | --- | --- |
+| Main idea | A whole computer simulated in software | One app isolated on a shared OS kernel |
+| Startup time | Usually slower | Usually faster |
+| Typical size | Larger | Smaller |
+
+<!--
+Use this only if the class asks "how is this different from a VM?"
+Do not assume students know what a VM or hypervisor is.
+
+Simple version:
+- A virtual machine is like a whole separate computer running inside your computer.
+- A container is lighter: it packages the app and its dependencies, but it shares the host OS kernel.
+- Docker on macOS and Windows still uses a small hidden Linux VM because containers are mainly a Linux feature.
+
+[~2 min if used]
+-->
+
+---
+---
+
+# Appendix: Containers underneath the hood
+
+- **What it can see**: a container gets its own view of processes, files, users, and network interfaces.
+- **What it can use**: the OS can cap each container's CPU and memory.
+- **Its files**: image layers are read-only. Writes go to a thin writable layer on top.
+
+Containers are mainly a **Linux** feature. Docker on macOS and Windows runs a small hidden Linux VM in the background.
+
+<!--
+For the curious: visibility = namespaces, resource caps = cgroups, layered files = OverlayFS.
+Windows also has Windows containers, but this workshop uses Linux containers.
+OrbStack provides an optimized Linux VM and Docker-compatible workflow on macOS.
+
+[~1.5 min if used]
 -->
 
 ---

@@ -28,35 +28,43 @@
 const layers = [
 	{
 		id: "desktop",
-		label: "Desktop app",
-		description: "Optional on Mac / Windows",
+		label: "Docker app",
+		description: "Installer and local dashboard",
 		tone: "tooling",
 		options: ["Docker Desktop", "OrbStack"],
-		hint: "Pick one. All give you the same docker command.",
+		hint: "On macOS / Windows, this also starts the Linux environment Docker needs.",
 	},
 	{
 		id: "cli",
-		label: "CLI",
-		description: "The docker command you type",
+		label: "Docker CLI",
+		description: "The commands you type",
 		tone: "cli",
 		options: ["docker build", "docker run", "docker compose"],
-		hint: "Talks to whatever runtime is installed.",
+		hint: "The CLI sends requests to the Docker service running in the background.",
 	},
 	{
 		id: "engine",
-		label: "Engine / Runtime",
-		description: "Actually starts and manages containers",
+		label: "Docker Engine",
+		description: "Builds images and starts containers",
 		tone: "engine",
-		options: ["Docker Engine", "Podman", "containerd"],
-		hint: "Swappable. Same images, different daemon.",
+		options: ["image builds", "container lifecycle", "networking"],
+		hint: "This is the part doing the real container work for this workshop.",
 	},
 	{
-		id: "standard",
-		label: "Standard",
-		description: "OCI image format",
+		id: "image",
+		label: "Container image",
+		description: "Portable app package",
 		tone: "standard",
+		options: ["OCI format", "Dockerfile layers"],
+		hint: "The standard image format is why the same image can run locally and on Render.",
+	},
+	{
+		id: "registry",
+		label: "Registry",
+		description: "Stores and shares images",
+		tone: "registry",
 		options: ["Docker Hub", "GHCR"],
-		hint: "Why images built here run on Render, Kubernetes, Podman.",
+		hint: "Like npm for container images. Render can also build straight from your repo.",
 	},
 ] as const;
 </script>
@@ -65,16 +73,16 @@ const layers = [
 .docker-stack {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  max-width: 46rem;
-  margin: 0.35rem auto 0;
-  font-size: 0.72rem;
+  gap: 0.62rem;
+  max-width: 60rem;
+  margin: 0.65rem auto 0;
+  font-size: 0.9rem;
 }
 
 .docker-stack-row {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.35fr);
-  gap: 0.55rem;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1.32fr);
+  gap: 0.78rem;
   align-items: center;
 }
 
@@ -83,10 +91,10 @@ const layers = [
   flex-direction: column;
   gap: 0.08rem;
   border: 1px solid var(--nus-border);
-  border-radius: 0.32rem;
+  border-radius: 0.42rem;
   background: var(--nus-bg-elevated);
-  padding: 0.38rem 0.5rem;
-  min-height: 2.55rem;
+  padding: 0.58rem 0.72rem;
+  min-height: 3.2rem;
   justify-content: center;
 }
 
@@ -113,6 +121,11 @@ const layers = [
   border-color: color-mix(in srgb, var(--nus-success), var(--nus-border) 50%);
 }
 
+.docker-stack-layer--registry {
+  border-color: color-mix(in srgb, var(--nus-muted), var(--nus-border) 45%);
+  background: color-mix(in srgb, var(--nus-success) 5%, var(--nus-bg-elevated));
+}
+
 .docker-stack-layer-label {
   color: var(--nus-text);
   font-size: 0.95em;
@@ -130,19 +143,19 @@ const layers = [
 .docker-stack-annotations {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.28rem;
+  gap: 0.36rem;
   align-items: center;
 }
 
 .docker-stack-chip {
   border: 1px solid var(--nus-border);
-  border-radius: 0.22rem;
+  border-radius: 0.28rem;
   background: var(--nus-code-bg);
   color: var(--nus-text);
-  font-size: 0.78em;
+  font-size: 0.8em;
   font-weight: 700;
   line-height: 1.2;
-  padding: 0.18rem 0.38rem;
+  padding: 0.24rem 0.48rem;
   white-space: nowrap;
 }
 
