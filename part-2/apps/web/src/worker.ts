@@ -5,6 +5,8 @@ type Bindings = {
   ASSETS: { fetch: typeof fetch };
   SUPABASE_URL?: string;
   SUPABASE_KEY?: string;
+  VIBE_SEARCH_URL?: string;
+  VIBE_SEARCH_API_KEY?: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
@@ -68,6 +70,30 @@ app.post("/api/vote", async (c) => {
   }
 
   return c.json({ ok: true });
+});
+
+app.post("/api/vibe-search", async (c) => {
+  const { VIBE_SEARCH_URL, VIBE_SEARCH_API_KEY } = c.env;
+  if (!VIBE_SEARCH_URL) {
+    return c.json({ error: "Vibe Search is not configured" }, 503);
+  }
+
+  const body = await c.req.json();
+  const res = await fetch(`${VIBE_SEARCH_URL}/api/vibe-search`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(VIBE_SEARCH_API_KEY ? { "X-API-Key": VIBE_SEARCH_API_KEY } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+
+  return new Response(res.body, {
+    status: res.status,
+    headers: {
+      "Content-Type": res.headers.get("Content-Type") ?? "application/json",
+    },
+  });
 });
 
 app.get("/api/results", async (c) => {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { SwipeDeck } from "./components/SwipeDeck";
 import { Results } from "./components/Results";
+import { VibeSearch } from "./components/VibeSearch";
 import { fetchColors, fetchResults, type Color } from "./lib/api";
 
 type View = "loading" | "swipe" | "results";
@@ -49,6 +50,7 @@ export function App() {
       <div className="app">
         <h1 className="title">Color Swipe</h1>
         <p className="subtitle">Swipe right to upvote, left to downvote</p>
+        <VibeSearch />
         <div className="empty-state">
           <p>No colors found.</p>
           <p>Set up Supabase and run <code>pnpm migrate</code> to seed data.</p>
@@ -61,6 +63,7 @@ export function App() {
     <div className="app">
       <h1 className="title">Color Swipe</h1>
       <p className="subtitle">Swipe right to upvote, left to downvote</p>
+      <VibeSearch />
       <SwipeDeck colors={colors} onDone={handleDone} />
     </div>
   );

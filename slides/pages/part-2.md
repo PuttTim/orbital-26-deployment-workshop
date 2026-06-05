@@ -1332,12 +1332,38 @@ then remind them the same generated value must be configured in Render too.
 class: compact
 ---
 
+# Connect to color-swipe: bindings
+
+The Color Swipe frontend is already wired with a Vibe Search box. It calls
+`POST /api/vibe-search`, but that route does nothing useful until the Worker
+proxies the request to Render.
+
+Add these secrets to the Worker bindings in `src/worker.ts`:
+
+```ts
+type Bindings = {
+  ASSETS: { fetch: typeof fetch };
+  SUPABASE_URL?: string;
+  SUPABASE_KEY?: string;
+  VIBE_SEARCH_URL?: string;
+  VIBE_SEARCH_API_KEY?: string;
+};
+```
+
+---
+class: compact
+---
+
 # Connect to color-swipe: proxy route
 
-Add this route in `src/worker.ts`:
+Then add this route in `src/worker.ts`:
 
 ```ts
 app.post("/api/vibe-search", async (c) => {
+  if (!c.env.VIBE_SEARCH_URL || !c.env.VIBE_SEARCH_API_KEY) {
+    return c.json({ error: "Vibe Search is not configured" }, 503);
+  }
+
   const body = await c.req.json();
   const res = await fetch(`${c.env.VIBE_SEARCH_URL}/api/vibe-search`, {
     method: "POST",
