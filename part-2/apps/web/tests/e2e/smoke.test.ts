@@ -3,9 +3,9 @@ import { test, expect } from "@playwright/test";
 test("smoke test: load page, verify color card, swipe once", async ({ page }) => {
 	await page.goto("/");
 
-	await page.waitForSelector('[class*="swipe"]', { timeout: 10_000 });
+	await page.waitForSelector(".card", { timeout: 10_000 });
 
-	const card = page.locator('[class*="swipe-card"]').first();
+	const card = page.locator(".deck .card").first();
 	await expect(card).toBeVisible();
 
 	const box = await card.boundingBox();
