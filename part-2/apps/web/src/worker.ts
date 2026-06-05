@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { createClient } from "@supabase/supabase-js";
+import * as Sentry from "@sentry/cloudflare";
 
 type Bindings = {
   ASSETS: { fetch: typeof fetch };
@@ -7,12 +8,23 @@ type Bindings = {
   SUPABASE_KEY?: string;
   VIBE_SEARCH_URL?: string;
   VIBE_SEARCH_API_KEY?: string;
+  SENTRY_DSN?: string;
+  SENTRY_ENVIRONMENT?: string;
+  SENTRY_DEBUG_ENABLED?: string;
 };
 
-const app = new Hono<{ Bindings: Bindings }>();
+export const app = new Hono<{ Bindings: Bindings }>();
 
 app.get("/api/health", (c) => {
   return c.json({ ok: true, service: "color-swipe" });
+});
+
+app.get("/api/debug-sentry", (c) => {
+  if (c.env.SENTRY_DEBUG_ENABLED !== "true") {
+    return c.notFound();
+  }
+
+  throw new Error("Testing Sentry integration from Cloudflare Worker");
 });
 
 app.get("/api/colors", async (c) => {
@@ -131,4 +143,21 @@ app.get("/api/images/:key", async (c) => {
   });
 });
 
-export default app;
+const handler = {
+  async fetch(request, env, ctx) {
+    return app.fetch(request, env, ctx);
+  },
+} satisfies ExportedHandler<Bindings>;
+
+export default Sentry.withSentry<Bindings>(
+  (env) => {
+    if (!env.SENTRY_DSN) return undefined;
+
+    return {
+      dsn: env.SENTRY_DSN,
+      environment: env.SENTRY_ENVIRONMENT ?? "production",
+      tracesSampleRate: 0.1,
+    };
+  },
+  handler,
+);

@@ -1592,6 +1592,73 @@ What happens when you discover a bug in production?
 - How often it's happening
 - Performance data (slow endpoints, slow queries)
 
+<!--
+Sentry is the tool we'll use for error monitoring today.
+
+The big idea is simple: when an exception happens in production, your app sends an event to Sentry. Sentry groups similar events into issues, shows you the stack trace, and gives enough request context to start debugging.
+
+Logs are still useful, but Sentry is different because it is organized around actual failures. You do not need to be tailing logs at the exact moment something breaks.
+
+[~1 min]
+-->
+
+---
+---
+
+# Create your Sentry projects
+
+Go to [sentry.io](https://sentry.io) and sign in or create an account.
+
+Create **two projects**:
+
+| App | Platform | Project name |
+| --- | --- | --- |
+| Cloudflare Worker | Cloudflare Workers | `color-swipe-worker` |
+| FastAPI service | Python / FastAPI | `vibe-search-api` |
+
+Why two projects? Cleaner issue lists, clearer stack traces, and less confusion when one service breaks.
+
+<!--
+Walk students through creating the two projects.
+
+For the Worker project, choose Cloudflare Workers if it appears in the platform list. If not, JavaScript is also fine because we will install the Cloudflare SDK manually.
+
+For the Python service, choose Python and FastAPI if Sentry offers the framework option.
+
+The important thing is not the exact wizard screen. The important thing is that each deployed runtime gets its own project and therefore its own DSN.
+
+[~4 min]
+-->
+
+---
+---
+
+# Get the DSN
+
+For each Sentry project:
+
+1. Open the project in Sentry
+2. Go to **Settings**
+3. Go to **Client Keys (DSN)**
+4. Copy the **DSN** value
+
+The DSN looks like:
+
+```text
+https://abc123@o123456.ingest.sentry.io/7890123
+```
+
+The DSN tells the SDK which Sentry project should receive events.
+
+<!--
+Show this on screen if possible.
+
+The DSN is not the same as an API token. It identifies where events should be sent. It is often visible in frontend apps, but we still avoid hardcoding it because environment variables make deployments easier to configure and rotate.
+
+Make sure students copy the DSN from each project, not the organization slug and not an auth token.
+
+[~2 min]
+-->
 
 ---
 ---
@@ -1599,24 +1666,64 @@ What happens when you discover a bug in production?
 # Set up Sentry for FastAPI
 
 ```bash
-uv add sentry-sdk
+uv add "sentry-sdk[fastapi]"
 ```
 
 ```python
+import os
 import sentry_sdk
 from fastapi import FastAPI
 
-sentry_sdk.init(
-    dsn=os.environ["SENTRY_DSN"],
-    traces_sample_rate=1.0,  # 100% in dev, lower in production
-)
+if os.environ.get("SENTRY_DSN"):
+    sentry_sdk.init(
+        dsn=os.environ["SENTRY_DSN"],
+        environment=os.environ.get("SENTRY_ENVIRONMENT", "production"),
+        traces_sample_rate=0.1,
+    )
 
 app = FastAPI()
 ```
 
-The SDK auto-detects FastAPI. Unhandled exceptions are captured and sent to Sentry with the full request context.
+Unhandled exceptions are captured and sent to your `vibe-search-api` project.
 
-Add `SENTRY_DSN` to your Render environment variables (same way you'd add any other secret).
+<!--
+We make Sentry optional. If SENTRY_DSN is missing, the service still starts, which is helpful for local development and tests.
+
+The traces sample rate is intentionally low. A sample rate of 1.0 is convenient for demos, but it means every transaction is reported. For a workshop app, 0.1 keeps the example closer to production habits.
+
+[~2 min]
+-->
+
+---
+---
+
+# Store the FastAPI DSN
+
+Local development:
+
+```bash
+cd part-2/apps/vibe-search
+printf "SENTRY_DSN=..." >> .env
+printf "SENTRY_ENVIRONMENT=development" >> .env
+```
+
+Render:
+
+1. Open your Render service
+2. Go to **Environment**
+3. Add `SENTRY_DSN`
+4. Add `SENTRY_ENVIRONMENT=production`
+5. Save and redeploy
+
+Use the DSN from the `vibe-search-api` Sentry project.
+
+<!--
+This mirrors the way we configured other deployment secrets earlier.
+
+Students should not paste the Worker DSN here. If events from Python show up in color-swipe-worker, they copied the wrong project DSN.
+
+[~2 min]
+-->
 
 ---
 ---
@@ -1641,7 +1748,11 @@ Wrap your worker entry point:
 import * as Sentry from "@sentry/cloudflare";
 
 export default Sentry.withSentry(
-  (env) => ({ dsn: env.SENTRY_DSN }),
+  (env) => ({
+    dsn: env.SENTRY_DSN,
+    environment: env.SENTRY_ENVIRONMENT ?? "production",
+    tracesSampleRate: 0.1,
+  }),
   {
     async fetch(request, env, ctx) {
       return app.fetch(request, env, ctx);
@@ -1650,15 +1761,33 @@ export default Sentry.withSentry(
 );
 ```
 
+Use the DSN from the `color-swipe-worker` Sentry project.
+
+<!--
+The Cloudflare SDK wraps the Worker handler. That lets Sentry see unhandled exceptions that happen while the Worker handles requests.
+
+We also add compatibility flags if required by the SDK version. The current workshop app already has Wrangler configuration, so students only need to add the missing Sentry-related pieces.
+
+[~3 min]
+-->
+
 ---
 ---
 
 # Set up Sentry for Cloudflare Workers
 
-Set `SENTRY_DSN` as a Cloudflare secret:
+Local development, add to `.dev.vars`:
+
+```text
+SENTRY_DSN=...
+SENTRY_ENVIRONMENT=development
+```
+
+Production, set Cloudflare secrets:
 
 ```bash
 pnpm wrangler secret put SENTRY_DSN
+pnpm wrangler secret put SENTRY_ENVIRONMENT
 ```
 
 Then redeploy the Worker:
@@ -1667,26 +1796,108 @@ Then redeploy the Worker:
 pnpm run deploy
 ```
 
-Once the deploy finishes, Worker errors can appear in the same Sentry project as your FastAPI errors.
+Once the deploy finishes, Worker errors appear in `color-swipe-worker`.
+
+<!--
+For SENTRY_ENVIRONMENT, students can paste production when Wrangler prompts them.
+
+If they skip SENTRY_ENVIRONMENT, the code defaults to production. The important variable is SENTRY_DSN.
+
+[~2 min]
+-->
 
 ---
 ---
 
-# Test it
+# Add a safe test route
 
-Add a route that deliberately throws:
+Both apps include a route that deliberately throws only when enabled:
 
 ```python
-@app.get("/api/debug-sentry")
+@router.get("/api/debug-sentry")
 def trigger_error():
-    raise ValueError("Testing Sentry integration")
+    if not get_settings().sentry_debug_enabled:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    raise RuntimeError("Testing Sentry integration")
 ```
 
-Hit the endpoint. Within seconds, the error shows up in your Sentry dashboard with:
+```ts
+app.get("/api/debug-sentry", (c) => {
+  if (c.env.SENTRY_DEBUG_ENABLED !== "true") return c.notFound();
+
+  throw new Error("Testing Sentry integration");
+});
+```
+
+Default state: disabled, returns 404.
+
+<!--
+This is safer than leaving a public URL that anyone can use to generate errors.
+
+The route exists so students can verify the integration in a controlled way. Enable it only briefly, trigger the error, then disable it again.
+
+[~2 min]
+-->
+
+---
+---
+
+# Verify Sentry
+
+FastAPI:
+
+```bash
+SENTRY_DEBUG_ENABLED=true uv run uvicorn app.main:app --reload
+curl http://localhost:8000/api/debug-sentry
+```
+
+Cloudflare Worker:
+
+```bash
+pnpm wrangler secret put SENTRY_DEBUG_ENABLED
+pnpm run deploy
+curl https://your-worker.workers.dev/api/debug-sentry
+```
+
+Then open Sentry -> **Issues**.
+
+<!--
+For the Worker secret, paste true when Wrangler prompts.
+
+After verifying the event, set SENTRY_DEBUG_ENABLED to false or delete the secret. The endpoint should go back to returning 404.
+
+Sentry events are usually quick, but it can take a short moment for the issue to appear.
+
+[~3 min]
+-->
+
+---
+---
+
+# What should appear?
+
+In Sentry Issues, open the new error.
+
+You should see:
 
 - The full stack trace
 - The request URL, method, and headers
 - The Python/Node version and environment
+- The first seen / last seen timestamps
+- How many times the same error happened
+
+If nothing appears, check the DSN, redeploy, then trigger the route again.
+
+<!--
+For FastAPI, the issue should appear in vibe-search-api.
+
+For the Worker, the issue should appear in color-swipe-worker.
+
+If the event appears in the wrong project, the app has the wrong DSN. If no event appears, check that SENTRY_DSN is configured in the environment that is actually running the app.
+
+[~2 min]
+-->
 
 ---
 ---

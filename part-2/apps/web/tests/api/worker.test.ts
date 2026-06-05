@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import app from "../../src/worker";
+import { app } from "../../src/worker";
 
 const mockSelect = vi.fn();
 const mockOrder = vi.fn();
@@ -20,6 +20,24 @@ describe("GET /api/health", () => {
 
 		expect(res.status).toBe(200);
 		expect(body).toEqual({ ok: true, service: "color-swipe" });
+	});
+});
+
+describe("GET /api/debug-sentry", () => {
+	it("is disabled by default", async () => {
+		const res = await app.request("/api/debug-sentry", {}, {});
+
+		expect(res.status).toBe(404);
+	});
+
+	it("returns a server error when explicitly enabled", async () => {
+		const res = await app.request(
+			"/api/debug-sentry",
+			{},
+			{ SENTRY_DEBUG_ENABLED: "true" },
+		);
+
+		expect(res.status).toBe(500);
 	});
 });
 

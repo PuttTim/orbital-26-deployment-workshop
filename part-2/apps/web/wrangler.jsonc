@@ -3,6 +3,7 @@
 	"name": "color-swipe",
 	"main": "src/worker.ts",
 	"compatibility_date": "2026-05-17",
+	"compatibility_flags": ["nodejs_compat"],
 	"assets": {
 		"directory": "./dist",
 		"binding": "ASSETS",

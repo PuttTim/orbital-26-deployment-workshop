@@ -8,6 +8,9 @@ class Settings(BaseSettings):
 
     model_name: str = "all-MiniLM-L6-v2"
     vibe_search_api_key: str | None = None
+    sentry_dsn: str | None = None
+    sentry_environment: str = "production"
+    sentry_debug_enabled: bool = False
 
 
 @lru_cache

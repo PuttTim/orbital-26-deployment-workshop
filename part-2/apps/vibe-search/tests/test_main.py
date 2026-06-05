@@ -43,6 +43,26 @@ def test_health_endpoint_returns_service_metadata():
     assert response.json() == {"ok": True, "service": "vibe-search"}
 
 
+def test_debug_sentry_endpoint_is_disabled_by_default():
+    response = client().get("/api/debug-sentry")
+
+    assert response.status_code == 404
+
+
+def test_debug_sentry_endpoint_throws_when_enabled(monkeypatch):
+    monkeypatch.setenv("SENTRY_DEBUG_ENABLED", "true")
+    get_settings.cache_clear()
+
+    try:
+        response = TestClient(app, raise_server_exceptions=False).get(
+            "/api/debug-sentry"
+        )
+    finally:
+        get_settings.cache_clear()
+
+    assert response.status_code == 500
+
+
 def test_empty_query_is_rejected():
     response = client().post("/api/vibe-search", json={"query": "   "})
 
