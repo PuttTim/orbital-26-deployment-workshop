@@ -1985,13 +1985,6 @@ cd part-2/apps/web
 pnpm run deploy
 ```
 
-Try Vibe Search again with `ocean breeze`.
-
-Checkpoint:
-
-- The UI shows a color result
-- No new Sentry issue appears for the fixed request
-- The old Sentry issue can be marked **Resolved**
 
 <!--
 This closes the loop: observe user symptom, inspect Sentry, form a hypothesis, fix the code, redeploy, verify, and resolve the issue.
