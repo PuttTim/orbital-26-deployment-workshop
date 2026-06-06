@@ -622,6 +622,8 @@ Add to `wrangler.jsonc`:
 }
 ```
 
+Source maps are helpful for nicer production stack traces, but optional for this workshop. You do not need Sentry auth tokens for the basic error-monitoring demo.
+
 Add Hono middleware as the **first** middleware on your app in `src/worker.ts`:
 
 ```ts
