@@ -66,7 +66,8 @@ layout: section
 
 # Why test?
 
-<div class="grid grid-cols-2 gap-8 mt-8">
+<div class="grid grid-cols-[1.16fr_0.84fr] gap-7 mt-5 items-start">
+<div class="grid grid-cols-2 gap-6">
 <div>
 
 ## Without tests
@@ -88,15 +89,19 @@ layout: section
 
 </div>
 </div>
+<div v-click class="mt-2">
+  <img src="/debugging-meme.png" alt="Debugging meme" class="w-full max-h-70 object-contain" />
+</div>
+</div>
 
 <!--
-Why do we write tests? Because manually checking your app every time you change something doesn't scale.
+Why do we write tests? Because manually clicking around the app every time you change something does not scale.
 
-Without tests, every change is a gamble. You fix a bug in the voting logic but accidentally break the results page. You don't find out until a user reports it. And every time you refactor, you hold your breath.
+Without tests, every change is a gamble. You fix a bug in the voting logic, accidentally break the results page, and only find out when someone else tries the app. That is the debugging meme situation: the bug is real, but the path to reproducing it is messy and slow.
 
-With tests, you just run a command and it tells you: green means everything's fine, red means something broke. And you can refactor confidently because the tests are like your safety net, showing you exactly what changed.
+With tests, you turn the important checks into code. Green means the behavior we care about still works. Red means we broke a contract and we know where to start looking.
 
-For a student project, this might feel like overkill. But the earlier you build the habit, the less time you spend debugging at 2 AM before your demo.
+For a student project, this is not about writing a giant test suite. It is about covering the few paths that would be embarrassing to break during a demo: the API returns colors, helper functions build correct URLs, and the app can load in a real browser.
 
 [~2 min]
 -->
@@ -137,6 +142,170 @@ The shape tells you the ratio: lots of unit tests, some integration tests, just 
 -->
 
 ---
+class: compact
+---
+
+# Three test types
+
+<div class="mt-5 grid grid-cols-3 gap-4 text-[0.76rem]">
+  <div v-click class="rounded-lg border border-[var(--nus-border)] bg-[var(--nus-surface)] p-4 shadow-[var(--nus-shadow)]">
+    <div class="mb-2 text-lg font-bold text-[var(--nus-text)]">Unit</div>
+    <div class="nus-token-faint mb-3">One small piece</div>
+    <div class="font-bold">Question:</div>
+    <div>Does this function return the right value?</div>
+    <div class="mt-3 font-bold">Color Swipe example:</div>
+    <div><code>imageUrl("red.svg")</code></div>
+  </div>
+  <div v-click class="rounded-lg border border-[var(--nus-border)] bg-[color-mix(in_srgb,var(--nus-success),transparent_90%)] p-4 shadow-[var(--nus-shadow)]">
+    <div class="mb-2 text-lg font-bold text-[var(--nus-success)]">Integration</div>
+    <div class="nus-token-faint mb-3">Multiple pieces together</div>
+    <div class="font-bold">Question:</div>
+    <div>Does this route use its dependencies correctly?</div>
+    <div class="mt-3 font-bold">Color Swipe example:</div>
+    <div><code>GET /api/colors</code> + mocked Supabase</div>
+  </div>
+  <div v-click class="rounded-lg border border-[var(--nus-border)] bg-[color-mix(in_srgb,var(--nus-accent),transparent_88%)] p-4 shadow-[var(--nus-shadow)]">
+    <div class="mb-2 text-lg font-bold text-[var(--nus-accent)]">E2E</div>
+    <div class="nus-token-faint mb-3">Whole app like a user</div>
+    <div class="font-bold">Question:</div>
+    <div>Can a user complete the flow in a browser?</div>
+    <div class="mt-3 font-bold">Color Swipe example:</div>
+    <div>Load app, see card, swipe right</div>
+  </div>
+</div>
+
+<!--
+Before we write code, let's make the three categories concrete.
+
+Unit tests are the smallest. They test one function or one module with as little setup as possible. The question is: given this input, do we get this output?
+
+Integration tests connect a few pieces. In our case, the Hono route, the Worker environment, and the Supabase client contract. We still mock Supabase because we do not want a real database in a fast test, but we test that the route wires everything together correctly.
+
+E2E tests treat the app as a black box. They open the browser and act like a user. They are closest to the real demo, but they are slower and more expensive, so we only write a few.
+
+[~2 min]
+-->
+
+---
+class: compact scrollable-code
+---
+
+# Unit test example
+
+Test one pure function:
+
+```ts
+import { describe, expect, it } from "vitest";
+import { imageUrl } from "../../src/lib/api";
+
+describe("imageUrl", () => {
+  it("returns the API image path", () => {
+    expect(imageUrl("red.svg")).toBe("/api/images/red.svg");
+  });
+});
+```
+
+Why this is a unit test:
+
+- No browser
+- No server
+- No database
+- Same input always gives the same output
+
+<!--
+This is a unit test because the boundary is tiny. We are testing `imageUrl`, and nothing else.
+
+There is no browser, no React component, no Worker, no Supabase. The function does not know about the network. It just turns a storage key into the URL our frontend should use.
+
+This kind of test is cheap. It runs in milliseconds, and when it fails the failure is usually obvious. If someone changes the route from `/api/images` to `/api/image`, this test catches the mismatch immediately.
+
+The tradeoff is that a unit test cannot prove the whole app works. It only proves this small contract works.
+
+[~2 min]
+-->
+
+---
+class: compact scrollable-code
+---
+
+# Integration test example
+
+Test an API route with a mocked dependency:
+
+```ts
+mockOrder.mockResolvedValue({ data: mockColors, error: null });
+mockSelect.mockReturnValue({ order: mockOrder });
+
+const res = await app.request(
+  "/api/colors",
+  {},
+  {
+    SUPABASE_URL: "https://test.supabase.co",
+    SUPABASE_KEY: "test-key",
+  },
+);
+
+expect(res.status).toBe(200);
+expect(await res.json()).toEqual(mockColors);
+expect(mockFrom).toHaveBeenCalledWith("colors");
+expect(mockOrder).toHaveBeenCalledWith("created_at", { ascending: true });
+```
+
+<!--
+This is an integration test because we are testing more than one piece together.
+
+The request goes through the actual Hono app. The route reads Worker env bindings, creates a Supabase client, queries the `colors` table, orders by `created_at`, and returns JSON.
+
+But we still mock Supabase. That is intentional. If this test used a real database, it would need credentials, network, seeded data, and cleanup. That makes it slower and more fragile.
+
+So the boundary is: real route, fake external service. That is a very common integration test shape.
+
+The assertions do two jobs. The response assertions check what the caller receives. The mock assertions check that the route used Supabase in the way we expected.
+
+[~2.5 min]
+-->
+
+---
+class: compact scrollable-code
+---
+
+# E2E test example
+
+Test the main user flow in a browser:
+
+```ts
+import { expect, test } from "@playwright/test";
+
+test("load page and swipe once", async ({ page }) => {
+  await page.goto("/");
+  await page.waitForSelector(".card");
+
+  const card = page.locator(".deck .card").first();
+  await expect(card).toBeVisible();
+
+  const box = await card.boundingBox();
+  if (!box) throw new Error("Card not found");
+
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width + 300, box.y + box.height / 2);
+  await page.mouse.up();
+});
+```
+
+<!--
+This is E2E because we are no longer calling functions directly. We open the app like a user.
+
+The test does not know how `SwipeDeck` is implemented. It does not import React components. It does not call internal swipe functions. It loads the page, waits for a card, checks that the card is visible, then drags the mouse.
+
+That makes E2E tests powerful because they catch real wiring problems: the dev server fails, CSS hides the card, JavaScript crashes, the selector disappears, or the swipe interaction breaks.
+
+The tradeoff is cost. Browser tests are slower, and when they fail you may need screenshots or traces to debug them. That is why we write a few important E2E tests, not a giant suite of tiny browser tests.
+
+[~2.5 min]
+-->
+
+---
 ---
 
 # Vitest
@@ -162,57 +331,96 @@ Let's actually write some tests now.
 -->
 
 ---
+class: compact scrollable-code
 ---
 
 <CheckpointBadge />
 
-# Write API unit tests
+# Paste: API route tests
 
-Open `tests/api/worker.test.ts` and follow along.
-
-We test the Hono API routes using `app.request()` — no server needed:
+Open `tests/api/worker.test.ts` and replace the file:
 
 ```ts
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { app } from "../../src/worker";
+
+const mockSelect = vi.fn();
+const mockOrder = vi.fn();
+const mockFrom = vi.fn(() => ({
+  select: mockSelect,
+}));
 
 vi.mock("@supabase/supabase-js", () => ({
   createClient: vi.fn(() => ({
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnValue({
-        order: vi.fn().mockResolvedValue({ data: [], error: null }),
-      }),
-    })),
+    from: mockFrom,
   })),
 }));
 
 describe("GET /api/health", () => {
   it("returns ok status and service name", async () => {
     const res = await app.request("/api/health");
+    const body = await res.json();
+
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true, service: "color-swipe" });
+    expect(body).toEqual({ ok: true, service: "color-swipe" });
+  });
+});
+
+describe("GET /api/colors", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns colors from Supabase", async () => {
+    const mockColors = [
+      { id: "1", name: "Red", hex: "#FF0000", upvotes: 5, downvotes: 2 },
+      { id: "2", name: "Blue", hex: "#0000FF", upvotes: 3, downvotes: 1 },
+    ];
+
+    mockOrder.mockResolvedValue({ data: mockColors, error: null });
+    mockSelect.mockReturnValue({ order: mockOrder });
+
+    const res = await app.request(
+      "/api/colors",
+      {},
+      {
+        SUPABASE_URL: "https://test.supabase.co",
+        SUPABASE_KEY: "test-key",
+      },
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body).toEqual(mockColors);
+    expect(mockFrom).toHaveBeenCalledWith("colors");
+    expect(mockSelect).toHaveBeenCalledWith("*");
+    expect(mockOrder).toHaveBeenCalledWith("created_at", { ascending: true });
+  });
+
+  it("returns empty array when Supabase is not configured", async () => {
+    const res = await app.request("/api/colors", {}, {});
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body).toEqual([]);
   });
 });
 ```
 
-Run the tests:
-
-```bash
-pnpm test
-```
-
 <!--
-Okay, so open up tests/api/worker.test.ts. This file tests our Hono API routes.
+This is the first paste block. Tell them to replace the whole file so nobody is trying to merge snippets by hand.
 
-The key thing here is app.request(). This is Hono's built-in test helper, it simulates an HTTP request without actually starting a server. So we don't need to run pnpm dev or anything, we just call the route directly in the test.
+Start from the imports. `beforeEach`, `describe`, `it`, and `expect` are the testing vocabulary. `vi` is Vitest's mocking API. We import `app` directly from the Worker, so the test can call the routes without starting a dev server.
 
-And then this vi.mock() at the top, this replaces the Supabase client with a fake one. We don't want our tests hitting a real database, right? That would be slow and unreliable. So we mock it out and have it return empty data.
+The `mockSelect`, `mockOrder`, and `mockFrom` functions model the Supabase chain used by the route: `from("colors").select("*").order(...)`. We keep each function in a variable because later we assert that the route called Supabase correctly.
 
-The test itself is pretty simple: send a GET request to /api/health, check that the status is 200, check that the JSON body matches what we expect.
+The `vi.mock("@supabase/supabase-js", ...)` block means the real Supabase SDK never runs. No internet, no real database, no flaky credentials. The route thinks it is talking to Supabase, but it is talking to our controlled fake.
 
-Go ahead and run pnpm test, make sure everything passes.
+For `/api/health`, the test sends a request with `app.request("/api/health")`, reads the JSON, then checks the status and body. This is a small contract test: if someone changes the health response, the test tells us.
 
-[~5 min, students write and run tests]
+For `/api/colors`, the happy-path test sets mock data, passes fake Worker env bindings as the third argument to `app.request`, and checks both the response and the Supabase calls. The final test passes an empty env object and verifies the route fails gracefully by returning an empty array.
+
+[~6 min, students paste and skim the test]
 -->
 
 ---
@@ -220,46 +428,129 @@ Go ahead and run pnpm test, make sure everything passes.
 
 <CheckpointBadge />
 
-# Write client tests
+# Run the API tests
 
-Open `tests/client/api.test.ts`.
+```bash
+cd part-2/apps/web
+pnpm test tests/api/worker.test.ts
+```
 
-These test the API helper functions that React components use:
+Expected result:
+
+```text
+✓ GET /api/health > returns ok status and service name
+✓ GET /api/colors > returns colors from Supabase
+✓ GET /api/colors > returns empty array when Supabase is not configured
+```
+
+<!--
+Now run only this test file first. This gives faster feedback and keeps failures easier to read.
+
+If they see TypeScript or import errors, check that they are inside `part-2/apps/web` and dependencies were installed. If the Supabase expectations fail, it usually means the production route changed and the mock chain no longer matches the implementation.
+
+The teaching point here: a good test failure should tell us which contract broke. It should not just say "something somewhere is broken".
+
+[~2 min]
+-->
+
+---
+class: compact scrollable-code
+---
+
+<CheckpointBadge />
+
+# Paste: client helper tests
+
+Open `tests/client/api.test.ts` and replace the file:
 
 ```ts
-import { describe, expect, it } from "vitest";
-import { imageUrl } from "../../src/lib/api";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { imageUrl, searchVibes } from "../../src/lib/api";
+
+beforeEach(() => {
+  vi.stubGlobal("fetch", vi.fn());
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe("imageUrl", () => {
   it("returns the correct API path for a given key", () => {
-    expect(imageUrl("red.svg")).toBe("/api/images/red.svg");
+    const url = imageUrl("red.svg");
+    expect(url).toBe("/api/images/red.svg");
   });
 
   it("handles keys with subdirectories", () => {
-    expect(imageUrl("colors/blue.svg")).toBe("/api/images/colors/blue.svg");
+    const url = imageUrl("colors/blue.svg");
+    expect(url).toBe("/api/images/colors/blue.svg");
+  });
+});
+
+describe("searchVibes", () => {
+  it("posts the query to the vibe search API route", async () => {
+    const response = {
+      query: "rainy cyberpunk night",
+      model: "test-model",
+      results: [{ name: "Neon Blue", hex: "#00f5ff", score: 0.92 }],
+    };
+
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(JSON.stringify(response), {
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    await expect(searchVibes("rainy cyberpunk night")).resolves.toEqual(response);
+    expect(fetch).toHaveBeenCalledWith("/api/vibe-search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: "rainy cyberpunk night" }),
+    });
   });
 });
 ```
 
-Run all tests:
+<!--
+This file tests the client-side API helpers, meaning the functions React components call instead of manually writing fetch logic everywhere.
+
+The `beforeEach` replaces global `fetch` with a mock before every test. The `afterEach` restores the real global after every test. That keeps tests isolated, so one test cannot accidentally affect the next.
+
+`imageUrl` is a pure function: input string in, URL string out. These tests look tiny, but they protect the contract between frontend images and the Worker image route.
+
+`searchVibes` is not pure because it calls `fetch`, so we mock the response. The test checks two things: first, the helper returns parsed JSON to the caller; second, it sends the exact POST request our Worker expects.
+
+This is a useful pattern: do not test React components and network behavior at the same time if a small helper test can verify the network contract directly.
+
+[~5 min, students paste and skim the test]
+-->
+
+---
+---
+
+<CheckpointBadge />
+
+# Run the client tests
+
+```bash
+cd part-2/apps/web
+pnpm test tests/client/api.test.ts
+```
+
+Then run the Vitest suite:
 
 ```bash
 pnpm test
 ```
 
-Checkpoint:
-
-- The tests you wrote so far all pass (3 API + 2 client)
-- The completed repo includes more tests (12 total) for colors, Vibe Search, and Sentry
-
 <!--
-Okay next one. Open tests/client/api.test.ts.
+Again, run the focused file first, then the full Vitest suite.
 
-These are even simpler. imageUrl is a pure function, you give it an input, it gives you an output, no side effects, no database, no mocking needed. These are honestly some of the most valuable tests because they catch regressions when someone changes a URL pattern without realizing it.
+If this fails on `fetch`, check that the import includes `vi`, `beforeEach`, and `afterEach`, and that `vi.stubGlobal("fetch", vi.fn())` is above the tests. If it fails on the expected URL or body, that is a real mismatch between the helper and the Worker API.
 
-Run pnpm test again. You should now have 5 tests passing: 3 API tests and 2 client tests. The completed repo has more like 12 total, but these are the ones we're writing together.
+At this point, students have seen two levels of testing: route tests for backend behavior, and helper tests for frontend API contracts.
 
-[~3 min, students write and run tests]
+[~2 min]
 -->
 
 ---
@@ -267,23 +558,32 @@ Run pnpm test again. You should now have 5 tests passing: 3 API tests and 2 clie
 
 # Playwright
 
-- An **end-to-end** testing framework that runs real browsers
-- Simulates user interactions: clicks, typing, navigation, drag gestures
-- Catches bugs that unit tests miss: rendering issues, broken layouts, real user flows
+<div class="grid grid-cols-[1fr_0.8fr] gap-7 items-center mt-4">
+<div>
+
+- Runs your app in a **real browser**
+- Simulates user behavior: navigation, clicks, typing, drag gestures
+- Catches bugs unit tests miss: rendering, broken layouts, full user flows
 
 ```bash
 pnpm exec playwright install --with-deps chromium
 pnpm test:e2e
 ```
 
+</div>
+<div v-click>
+  <img src="/localhost-meme.webp" alt="Localhost meme" class="w-full max-h-70 object-contain" />
+</div>
+</div>
+
 <!--
-Okay so Vitest tests functions and routes in isolation, right? But what about testing the actual app as a user would experience it? Like, does the page actually load? Can you actually swipe the cards?
+Vitest tells us our functions and API routes behave correctly in isolation. Playwright answers a different question: if a user opens the app in a browser, does the actual product still work?
 
-That's where Playwright comes in. Playwright opens a real browser, like an actual Chrome window, navigates to your app, and interacts with it. It can click buttons, type text, drag things around. It's basically automating what you would do manually.
+Playwright opens Chromium, navigates to the app, waits for real HTML and CSS to render, and then interacts with the page. That means it can catch issues like a missing card, a broken selector, or a layout that no unit test would ever see.
 
-And the nice thing is, Playwright automatically starts your dev server before running the tests, so you don't need to have pnpm dev running in another terminal.
+The localhost meme is the point: E2E tests are basically a robot doing the "does it work on my machine?" check, except it does it repeatably and CI can do it too.
 
-For today, we'll write one smoke test: load the page, check a card appears, and do one swipe.
+For today, we only need one smoke test: load the app, wait for a color card, and perform one swipe. Smoke tests are not exhaustive. They are a fast answer to "is the main flow obviously broken?"
 
 [~1.5 min]
 -->
@@ -327,15 +627,17 @@ pnpm test:e2e
 ```
 
 <!--
-Alright, open tests/e2e/smoke.test.ts.
+Open `tests/e2e/smoke.test.ts` and replace it with this snippet.
 
-Let me walk through what this does. page.goto("/") opens the app. waitForSelector waits for a card to appear. gives it 10 seconds because sometimes the dev server takes a moment.
+`page.goto("/")` opens the app root. The base URL comes from `playwright.config.ts`, and the config also starts the dev server before the test runs.
 
-Then we find the first card, get its position on screen with boundingBox, and simulate a drag gesture: mouse to the center, hold down, drag right, release. That's a "like" swipe.
+`waitForSelector(".card")` is important because frontend apps render asynchronously. We wait for the thing the user needs before interacting with it.
 
-To run this, first install the Playwright browser: pnpm exec playwright install --with-deps chromium. This downloads a Chromium binary. Then run pnpm test:e2e.
+The `locator(".deck .card").first()` line finds the first card. `expect(card).toBeVisible()` checks the UI state before we start dragging.
 
-You should see a browser window pop up briefly, the card swipes, and the test passes. Pretty cool, right?
+The `boundingBox()` gives us the card's screen coordinates. The mouse sequence moves to the center, presses down, drags right, and releases. That mimics a real swipe instead of calling internal app functions.
+
+First install Chromium with the Playwright command, then run `pnpm test:e2e`. If this fails locally, inspect the browser trace or the screenshot output. If it fails in CI, the same artifacts help you debug without guessing.
 
 [~5 min, students install browsers and run E2E]
 -->
@@ -351,7 +653,8 @@ layout: section
 
 # Right now, deploying looks like this
 
-<div class="mt-8 flex flex-col items-center gap-3 text-[0.88rem]">
+<div class="grid grid-cols-[1fr_0.72fr] gap-7 items-center mt-4">
+<div class="flex flex-col items-center gap-3 text-[0.88rem]">
   <div v-click class="w-80 rounded-lg border border-[var(--nus-border)] bg-[var(--nus-surface)] px-4 py-3 text-center shadow-[var(--nus-shadow)]">
     <span class="font-bold">1.</span> You finish coding
   </div>
@@ -368,13 +671,17 @@ layout: section
     <span class="font-bold text-[var(--nus-warning)]">4.</span> <span class="text-[var(--nus-warning)]">You forget step 2 or 3 at some point</span>
   </div>
 </div>
+<div v-click>
+  <img src="/fake-slack-ai-slop.webp" alt="Fake deployment reminder chat" class="w-full max-h-76 object-contain" />
+</div>
+</div>
 
 <!--
 Okay, so in Part 1, you deployed manually, right? You ran pnpm deploy from your terminal and Wrangler uploaded everything to Cloudflare. And that works, it's fine for like one person.
 
-But what happens when you forget to run the tests before deploying? Or your teammate needs to deploy but doesn't know the commands? Or you just had a long day and deploy from the wrong branch?
+But manual deployment has hidden state: you have to remember the commands, use the right branch, run the tests first, and have credentials configured on your laptop. A reminder message in Slack is not automation. It is just manual work with extra steps.
 
-Manual deploys are fragile because they depend on you doing everything right, every single time. And like, we're human, we forget things. The solution is to let a machine do it, that's CI/CD.
+CI/CD moves those steps into a repeatable pipeline. The machine runs the same commands every time, in a clean environment, and it records exactly what happened.
 
 [~2 min]
 -->
@@ -633,25 +940,57 @@ The Cloudflare API token is different from what you used with wrangler login, yo
 -->
 
 ---
+class: compact scrollable-code
 ---
 
 <CheckpointBadge />
 
-# Fill in the workflow template
+# Paste: workflow template answers
 
 Open `.github/workflows/deploy-color-swipe.yml` in your repo.
 
-It has `____` blanks for you to fill in. Use what you just learned:
+Replace the `____` blanks with these blocks:
 
-- **Triggers**: which branches should trigger the workflow?
-- **Test steps**: what commands run the tests?
-- **Deploy condition**: when should the deploy job run?
-- **Deploy step**: what command deploys to Cloudflare?
+```yaml
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+```
+
+```yaml
+- name: Run tests
+  run: pnpm test
+
+- name: Install Playwright browsers
+  run: pnpm exec playwright install --with-deps chromium
+
+- name: Run E2E tests
+  run: pnpm test:e2e
+```
+
+```yaml
+if: github.ref == 'refs/heads/main'
+```
+
+```yaml
+- name: Deploy
+  run: pnpm deploy
+```
 
 <!--
-Okay so in your repo, open .github/workflows/deploy-color-swipe.yml. We've set up a template with blanks for you to fill in based on what we just went through.
+This is the CI/CD paste section. The template already has the structure, so students only need the missing pieces.
 
-The blanks are for the trigger branches, the test commands, the deploy condition, and the deploy step. Take a few minutes to fill these in, and if you get stuck, look back at the workflow slide or ask us.
+The first block is the trigger. Pushes to `main` should test and deploy. Pull requests targeting `main` should test only.
+
+The second block is the test job. `pnpm test` runs Vitest. The Playwright install step downloads the Chromium browser inside GitHub's runner. `pnpm test:e2e` then runs the browser smoke test.
+
+The third block is the deploy guard. `github.ref == 'refs/heads/main'` prevents PRs and feature branches from deploying to production.
+
+The last block is the deploy command. It uses the same `pnpm deploy` command students ran manually in Part 1, but now GitHub Actions runs it after the tests pass.
+
+Ask them to compare this with the full workflow slide: CI is just commands they already know, written down in YAML.
 
 [~5 min, students fill in the template]
 -->
