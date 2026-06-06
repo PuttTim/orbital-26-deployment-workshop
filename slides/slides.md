@@ -15,6 +15,21 @@ drawings:
 transition: view-transition
 comark: true
 duration: 120min
+addons:
+  - liveshell
+  - livecode
+terminal:
+  options:
+    cursorBlink: true
+    fontFamily: "'Source Code Pro', monospace"
+    fontSize: 15
+    theme:
+      background: "#111827"
+      foreground: "#f9fafb"
+      cursor: "#f97316"
+      selectionBackground: "rgba(249, 115, 22, 0.25)"
+livecode:
+  zoom: 0.8
 ---
 
 <!--
@@ -29,6 +44,6 @@ src: ./pages/pre-workshop.md
 src: ./pages/part-1.md
 ---
 
-<!-- ---
+---
 src: ./pages/part-2.md
 ---

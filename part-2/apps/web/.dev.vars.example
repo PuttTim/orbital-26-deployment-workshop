@@ -1,0 +1,14 @@
+# Supabase, copy from Supabase dashboard -> Settings -> API Keys.
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=sb_publishable_your-key-here
+
+# Vibe Search service, added after deploying part-2/apps/vibe-search to Render.
+VIBE_SEARCH_URL=https://your-vibe-search-service.onrender.com
+VIBE_SEARCH_API_KEY=replace-with-generated-internal-api-key
+
+# Sentry, use the DSN from the color-swipe-worker project.
+SENTRY_DSN=https://your-worker-dsn@o000000.ingest.sentry.io/0000000
+SENTRY_ENVIRONMENT=development
+
+# Instructor fallback only. Keep false unless deliberately testing /api/debug-sentry.
+SENTRY_DEBUG_ENABLED=false
