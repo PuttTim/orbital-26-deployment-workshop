@@ -5,9 +5,9 @@ name: Color Swipe CI/CD
 # - Run on pull requests targeting main
 on:
     push:
-        branches: [____]
+        branches: [main]
     pull_request:
-        branches: [____]
+        branches: [main]
 
 jobs:
     test:
