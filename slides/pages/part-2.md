@@ -1496,6 +1496,7 @@ Important: do NOT rely on CORS for security. CORS is a browser feature. It doesn
 -->
 
 ---
+class: compact scrollable-code
 ---
 
 # It's lockdown time
@@ -1508,9 +1509,9 @@ Render dashboard → Environment → Add Environment Variable
 VIBE_SEARCH_API_KEY=<generated value>
 ```
 
-Then verify it in FastAPI (`app/api/dependencies.py` and `app/api/routes.py`):
+Then verify it in FastAPI (`app/api/dependencies.py`):
 
-```py
+```py {*}{maxHeight:'36vh'}
 from fastapi import Depends, Header, HTTPException
 
 from app.core.config import get_settings
@@ -1527,6 +1528,14 @@ def require_internal_api_key(
     if x_internal_api_key != expected_api_key:
         raise HTTPException(status_code=401, detail="Invalid API key")
 ```
+
+---
+class: compact
+---
+
+# It's lockdown time
+
+Wire the dependency on the route in `app/api/routes.py`:
 
 ```py
 @router.post("/vibe-search", dependencies=[Depends(require_internal_api_key)])
@@ -2048,13 +2057,14 @@ Now open Sentry, go to color-swipe-worker, Issues tab. You should see a new issu
 -->
 
 ---
+class: compact scrollable-code
 ---
 
 # Capture useful context
 
 The Worker still records upstream failures before returning a safe response:
 
-```ts
+```ts {*}{maxHeight:'42vh'}
 if (!res.ok) {
   Sentry.withScope((scope) => {
     scope.setTag("upstream_service", "vibe-search");
@@ -2072,6 +2082,12 @@ if (!res.ok) {
   return c.json({ error: "Search service unavailable" }, 502);
 }
 ```
+
+---
+class: compact
+---
+
+# Capture useful context
 
 The deliberate bug is different. It crashes after the upstream request succeeds:
 
