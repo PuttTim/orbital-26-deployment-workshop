@@ -6,14 +6,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "deploy": "pnpm build && wrangler deploy --outdir dist --upload-source-maps --var SENTRY_RELEASE:$(sentry-cli releases propose-version)",
+    "deploy": "pnpm build && wrangler deploy --outdir dist",
     "migrate": "tsx scripts/migrate.ts",
     "seed-images": "tsx scripts/seed-images.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
-    "sentry:sourcemaps": "_SENTRY_RELEASE=$(sentry-cli releases propose-version) && sentry-cli releases new $_SENTRY_RELEASE --org=oh-tien-cheng --project=color-swipe-worker && sentry-cli sourcemaps upload --org=oh-tien-cheng --project=color-swipe-worker --release=$_SENTRY_RELEASE --strip-prefix 'dist/..' dist",
-    "postdeploy": "pnpm sentry:sourcemaps"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@sentry/cloudflare": "^10.56.0",
@@ -26,7 +24,6 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250525.0",
     "@playwright/test": "^1.52.0",
-    "@sentry/cli": "^2.58.6",
     "@types/node": "^25.9.1",
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
