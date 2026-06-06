@@ -41,5 +41,9 @@ src: ./pages/pre-workshop.md
 ---
 
 ---
+src: ./pages/part-1.md
+---
+
+---
 src: ./pages/part-2.md
 ---
