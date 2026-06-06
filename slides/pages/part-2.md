@@ -48,7 +48,7 @@ So here's what we're covering today. Four main topics.
 
 First, testing: we're going to actually write tests for the Color Swipe app you deployed last week. Then CI/CD, so instead of manually running pnpm deploy every time, we'll set it up so that when you push to GitHub, it automatically runs your tests and deploys for you.
 
-After that, Tian Cheng will go through containers, so that's Docker, how to package your app so it runs the same way everywhere. And then monitoring, how to know when things break in production, because trust me, things will break.
+After that, Tien Cheng will go through containers, so that's Docker, how to package your app so it runs the same way everywhere. And then monitoring, how to know when things break in production, because trust me, things will break.
 
 Let's start with testing.
 
@@ -1477,7 +1477,7 @@ One thing: Render free tier spins down after 15 minutes idle. First request afte
 # How to not get hacked
 
 - Problem: `vibe-search` is still public if someone knows the Render URL
-- Consequence (worse case): api bills go brrr
+- Consequence (worst case): API bills go brrr
 - Good options:
   - **Private networking**: backend + `vibe-search` on the same private network
   - **API Gateway**: put a gateway in front for auth, rate limits, logging, and routing
@@ -1853,10 +1853,10 @@ After this, any unhandled exception automatically shows up in Sentry. You don't 
 
 Local development:
 
-```bash
-cd part-2/apps/vibe-search
-printf "SENTRY_DSN=..." >> .env
-printf "SENTRY_ENVIRONMENT=development" >> .env
+```text
+# part-2/apps/vibe-search/.env
+SENTRY_DSN=<your vibe-search-api DSN>
+SENTRY_ENVIRONMENT=development
 ```
 
 Render:
@@ -1870,7 +1870,7 @@ Render:
 Use the DSN from the `vibe-search-api` Sentry project.
 
 <!--
-Local dev. add SENTRY_DSN to .env in the vibe-search directory. Production. add it in Render's environment variables, same as the API key earlier.
+Local dev. create or open the .env file in the vibe-search directory and write these two lines manually. Production. add the same values in Render's environment variables, same as the API key earlier.
 
 Make sure you use the DSN from vibe-search-api, not the Worker project. If you use the wrong one, Python errors show up in the wrong place.
 
@@ -1895,6 +1895,10 @@ Add to `wrangler.jsonc`:
 }
 ```
 
+---
+---
+# Set up Sentry for Cloudflare Workers
+
 Add Hono middleware as the first middleware on your app:
 
 ```ts
@@ -1918,7 +1922,7 @@ Use the DSN from the `color-swipe-worker` Sentry project.
 <!--
 For the Worker, install @sentry/cloudflare and @sentry/hono.
 
-Add nodejs_compat and upload_source_maps to wrangler.jsonc. Source maps are important, without them, stack traces in Sentry are minified garbage.
+Add nodejs_compat to wrangler.jsonc. upload_source_maps is helpful for nicer stack traces, but we will keep source-map upload optional so the workshop deploy only needs the Cloudflare and Supabase secrets from earlier.
 
 The Sentry middleware wraps every request, so if anything throws, it's captured automatically. Same pattern, if SENTRY_DSN isn't set, Sentry is disabled.
 
@@ -2182,12 +2186,12 @@ In Sentry, mark the issue as resolved. That closes the loop: observe symptom, ch
 | **Performance** | Slowest endpoints, p95 response times |
 | **Alerts** | Email or Slack notification when error rate spikes |
 
-If stack traces look minified in production, check that `upload_source_maps` is enabled and redeploy. Local `wrangler dev` does not upload source maps.
+If stack traces look minified in production, source maps are the next thing to configure. Local `wrangler dev` does not upload source maps.
 
 <!--
 Quick summary of Sentry features. Issues: grouped errors with frequency. Stack traces: exact line. Breadcrumbs: what happened before the error. Performance: slowest endpoints. Alerts: email or Slack when error rates spike.
 
-If stack traces look minified, check upload_source_maps in wrangler.jsonc and redeploy.
+If stack traces look minified, source maps are the next thing to configure. For this workshop, the important part is seeing the issue, request, and failing line.
 
 [~1 min]
 -->
