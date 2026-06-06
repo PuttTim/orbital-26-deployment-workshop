@@ -23,10 +23,14 @@ What we covered in Part 1:
 - Serverless deployment on Cloudflare Workers
 - Connecting Supabase for database and file storage
         
-<!-- Putt: Testing, CI/CD -->
+<!-- Putt: Testing, CI/CD | Tien Cheng: Containers, Monitoring
 
+Okay, welcome back everyone. So last week we went through how to take your app from localhost to the internet, right? We deployed a React app on Cloudflare Workers, connected Supabase for database and file storage, and at the end you had a public URL that anyone can access.
 
-<!-- Tien Cheng: Containers, Monitoring -->
+Today we're building on top of that. Putt will go through testing and CI/CD first, then I'll take over for containers and monitoring.
+
+[~1 min]
+-->
 
 ---
 layout: section
@@ -40,9 +44,11 @@ layout: section
 - Monitoring: know when things break
 
 <!--
-Here's the roadmap for today. We'll cover four topics, each with a concept section followed by hands-on.
+So here's what we're covering today. Four main topics.
 
-First, testing — we'll write tests for the Color Swipe app you deployed in Part 1. Then CI/CD — we'll automate running those tests and deploying every time you push code. After that, containers — we'll package a Python microservice with Docker. And finally, monitoring — we'll set up Sentry to catch errors in production.
+First, testing: we're going to actually write tests for the Color Swipe app you deployed last week. Then CI/CD, so instead of manually running pnpm deploy every time, we'll set it up so that when you push to GitHub, it automatically runs your tests and deploys for you.
+
+After that, Tian Cheng will go through containers, so that's Docker, how to package your app so it runs the same way everywhere. And then monitoring, how to know when things break in production, because trust me, things will break.
 
 Let's start with testing.
 
@@ -88,7 +94,7 @@ Why do we write tests? Because manually checking your app every time you change 
 
 Without tests, every change is a gamble. You fix a bug in the voting logic but accidentally break the results page. You don't find out until a user reports it. And every time you refactor, you hold your breath.
 
-With tests, you run a command and get instant feedback. Green means good. Red means something broke. You can refactor confidently because the tests tell you exactly what changed.
+With tests, you just run a command and it tells you: green means everything's fine, red means something broke. And you can refactor confidently because the tests are like your safety net, showing you exactly what changed.
 
 For a student project, this might feel like overkill. But the earlier you build the habit, the less time you spend debugging at 2 AM before your demo.
 
@@ -117,17 +123,15 @@ class: compact
 </div>
 
 <!--
-The testing pyramid is a mental model for how many of each type of test to write.
+Okay, so this is the testing pyramid. It's basically a mental model for what kinds of tests you should write and how many of each.
 
-At the bottom: unit tests. These test one function or one module in isolation. They're fast, there are lots of them, and they're cheap to write. Example: does imageUrl("red.svg") return "/api/images/red.svg"?
+At the bottom, unit tests. These are the bread and butter. They test one function at a time. Like, does this function return the correct URL? They're fast, you can have hundreds of them, and they're easy to write.
 
-In the middle: integration tests. These test multiple pieces working together. Example: does the Hono API route actually query Supabase and return the right data?
+In the middle, integration tests. These test multiple things working together. Like, does the API route actually query the database and return the right data?
 
-At the top: end-to-end tests. These test the entire app from the user's perspective using a real browser. They're slow, expensive, and brittle — but they catch real user-facing bugs. Example: does the Color Swipe app load, show cards, and let you swipe?
+And at the top, end-to-end tests. These simulate a real user. Opening a browser, clicking buttons, swiping cards. They're slow and can be a bit flaky, but they catch bugs that unit tests miss.
 
-The pyramid shape tells you the ratio: lots of unit tests, some integration tests, a few E2E tests.
-
-For today's workshop, we'll write one or two of each to give you a feel for all three layers.
+The shape tells you the ratio: lots of unit tests, some integration tests, just a few E2E tests. You don't need 50 E2E tests; we'll write a few of each so you get a feel for all three layers.
 
 [~2 min]
 -->
@@ -148,11 +152,11 @@ pnpm test:watch    # re-run on file changes
 ```
 
 <!--
-We're using Vitest because our app already uses Vite. Vitest plugs directly into Vite's module system, so it understands TypeScript, JSX, and all the imports your app uses — no extra configuration needed.
+So the testing framework we're using is Vitest. If your project uses Vite, which like most React and Vue projects do nowadays, then Vitest just plugs right in. You don't need to configure anything extra.
 
-The API is almost identical to Jest, which is the most popular JavaScript testing framework. If you've seen Jest before, Vitest will feel familiar. If you haven't, don't worry — the API is simple: describe groups your tests, it defines individual test cases, and expect makes assertions.
+The API is basically the same as Jest if you've used that before. You have describe to group your tests, it to define individual test cases, and expect to check if things are correct. Pretty straightforward.
 
-Let's write some tests.
+Let's actually write some tests now.
 
 [~1 min]
 -->
@@ -198,15 +202,15 @@ pnpm test
 ```
 
 <!--
-Walk through the test file line by line.
+Okay, so open up tests/api/worker.test.ts. This file tests our Hono API routes.
 
-app.request() is Hono's built-in test helper. It simulates an HTTP request and returns a Response object — exactly like a real fetch call, but without starting a server.
+The key thing here is app.request(). This is Hono's built-in test helper, it simulates an HTTP request without actually starting a server. So we don't need to run pnpm dev or anything, we just call the route directly in the test.
 
-vi.mock() replaces the Supabase client with a mock. This is critical — we don't want tests hitting a real database. The mock returns empty data, which is fine for testing the route logic.
+And then this vi.mock() at the top, this replaces the Supabase client with a fake one. We don't want our tests hitting a real database, right? That would be slow and unreliable. So we mock it out and have it return empty data.
 
-The describe/it/expect pattern is standard across most testing frameworks. describe groups related tests, it defines a single test case, and expect makes assertions about the result.
+The test itself is pretty simple: send a GET request to /api/health, check that the status is 200, check that the JSON body matches what we expect.
 
-Have students run pnpm test and verify all tests pass.
+Go ahead and run pnpm test, make sure everything passes.
 
 [~5 min, students write and run tests]
 -->
@@ -249,11 +253,11 @@ Checkpoint:
 - The completed repo includes more tests (12 total) for colors, Vibe Search, and Sentry
 
 <!--
-Client tests are the simplest tests to write. They test pure functions — no mocking, no async, no server.
+Okay next one. Open tests/client/api.test.ts.
 
-imageUrl is a pure function: given an input, it always returns the same output. These are the easiest things to test and the most valuable — they catch regressions when someone changes a URL pattern.
+These are even simpler. imageUrl is a pure function, you give it an input, it gives you an output, no side effects, no database, no mocking needed. These are honestly some of the most valuable tests because they catch regressions when someone changes a URL pattern without realizing it.
 
-Have students run pnpm test and verify the tests they wrote so far pass (3 API + 2 client).
+Run pnpm test again. You should now have 5 tests passing: 3 API tests and 2 client tests. The completed repo has more like 12 total, but these are the ones we're writing together.
 
 [~3 min, students write and run tests]
 -->
@@ -273,13 +277,13 @@ pnpm test:e2e
 ```
 
 <!--
-Playwright is different from Vitest. Instead of testing functions in isolation, it opens a real browser, navigates to your app, and interacts with it like a real user.
+Okay so Vitest tests functions and routes in isolation, right? But what about testing the actual app as a user would experience it? Like, does the page actually load? Can you actually swipe the cards?
 
-It can click buttons, type text, scroll pages, and even simulate drag gestures — which is exactly what we need for the swipe cards in Color Swipe.
+That's where Playwright comes in. Playwright opens a real browser, like an actual Chrome window, navigates to your app, and interacts with it. It can click buttons, type text, drag things around. It's basically automating what you would do manually.
 
-Playwright automatically starts your dev server before running tests (configured in playwright.config.ts), so you don't need to manually start pnpm dev in another terminal.
+And the nice thing is, Playwright automatically starts your dev server before running the tests, so you don't need to have pnpm dev running in another terminal.
 
-For today, we'll write one smoke test: load the page, verify a color card appears, and swipe once.
+For today, we'll write one smoke test: load the page, check a card appears, and do one swipe.
 
 [~1.5 min]
 -->
@@ -323,17 +327,15 @@ pnpm test:e2e
 ```
 
 <!--
-Walk through the test:
+Alright, open tests/e2e/smoke.test.ts.
 
-1. page.goto("/") opens the app
-2. waitForSelector waits for a color card to render (`.card`)
-3. locator finds the first card in the deck
-4. boundingBox gets the card's position and size
-5. The mouse.move/down/move/up sequence simulates a drag gesture to the right — a "like" swipe
+Let me walk through what this does. page.goto("/") opens the app. waitForSelector waits for a card to appear. gives it 10 seconds because sometimes the dev server takes a moment.
 
-The webServer config in playwright.config.ts automatically starts pnpm dev before the test runs.
+Then we find the first card, get its position on screen with boundingBox, and simulate a drag gesture: mouse to the center, hold down, drag right, release. That's a "like" swipe.
 
-Have students install Playwright browsers and run the E2E test. The browser will open and they'll see the card swipe automatically.
+To run this, first install the Playwright browser: pnpm exec playwright install --with-deps chromium. This downloads a Chromium binary. Then run pnpm test:e2e.
+
+You should see a browser window pop up briefly, the card swipes, and the test passes. Pretty cool, right?
 
 [~5 min, students install browsers and run E2E]
 -->
@@ -368,13 +370,11 @@ layout: section
 </div>
 
 <!--
-In Part 1, you deployed manually. You ran pnpm deploy from your terminal, and Wrangler uploaded your app to Cloudflare.
+Okay, so in Part 1, you deployed manually, right? You ran pnpm deploy from your terminal and Wrangler uploaded everything to Cloudflare. And that works, it's fine for like one person.
 
-That works fine for a single developer. But what happens when you have a team? What if someone pushes broken code? What if you forget to test before deploying? What if you're sick and your teammate needs to deploy but doesn't know the steps?
+But what happens when you forget to run the tests before deploying? Or your teammate needs to deploy but doesn't know the commands? Or you just had a long day and deploy from the wrong branch?
 
-Manual deploys are fragile. They rely on you remembering every step, every time. And humans are bad at remembering things.
-
-The solution: let a machine do it. Every time you push code, a machine runs the tests and deploys for you. That's CI/CD.
+Manual deploys are fragile because they depend on you doing everything right, every single time. And like, we're human, we forget things. The solution is to let a machine do it, that's CI/CD.
 
 [~2 min]
 -->
@@ -414,13 +414,9 @@ The solution: let a machine do it. Every time you push code, a machine runs the 
 </v-clicks>
 
 <!--
-Continuous Integration answers the question: "did my change break anything?"
+So CI stands for Continuous Integration. The idea is pretty simple: every time you push code to GitHub, a machine automatically picks it up, installs your dependencies, and runs your test suite. If everything passes, green checkmark. If something fails, red X.
 
-Every time you push code to GitHub, a CI system picks up your code, installs dependencies, and runs your test suite. If all tests pass, you get a green checkmark. If any test fails, you get a red X and the exact error message.
-
-The "continuous" part means it happens on every push — not just when you remember. This catches bugs early, when they're cheap to fix.
-
-For your Orbital project, this means you can push code confidently at 1 AM and know that if something broke, you'll see it immediately — not when your advisor tries the demo next week.
+The "continuous" part means it happens on every push, not just when you remember. So let's say you're working on your orbital project at like 1 AM, you push some code, and you accidentally broke something. CI catches it immediately, you can fix it then instead of finding out a week later when your advisor tries the demo.
 
 [~2 min]
 -->
@@ -461,13 +457,11 @@ For your Orbital project, this means you can push code confidently at 1 AM and k
 </v-clicks>
 
 <!--
-Continuous Deployment takes CI one step further. After tests pass, the system automatically deploys your code to production. No human intervention needed.
+And then CD, Continuous Deployment, takes it one step further. After your tests pass, the system automatically deploys your code to production. No human needed.
 
-The "continuous" part means your production app is always up to date with the latest tested code. You push, tests run, code deploys. It's a pipeline.
+So the full pipeline is: you push code, tests run, if tests pass, code deploys. You just write code and push. Everything else is automated.
 
-Some teams use "Continuous Delivery" instead, which means the deploy is one click away but not fully automatic. For student projects, full Continuous Deployment is fine — your production environment is low-stakes.
-
-Together, CI/CD means: push code, tests run, code deploys. You just write code and push. Everything else is automatic.
+Some teams use "Continuous Delivery" instead, which means the deploy is ready but needs one click to approve. For orbital projects, full automatic deployment is fine, it's not like you have millions of users who'll be affected, right?
 
 [~2 min]
 -->
@@ -499,19 +493,11 @@ GitHub's built-in CI/CD platform. No extra tools to install.
 </div>
 
 <!--
-GitHub Actions is GitHub's built-in CI/CD platform. You don't need to install anything or sign up for a separate service. It's already available in every GitHub repository.
+So the tool we're using for CI/CD is GitHub Actions. It's GitHub's built-in CI/CD platform, so you don't need to sign up for anything extra, it's already there in every repo.
 
-The core concepts are simple:
+The concepts are pretty simple. A workflow is a YAML file in .github/workflows/ that defines the pipeline. A job is a set of steps that run on a fresh virtual machine, so it's like a clean computer every time, nothing from your laptop. A step is a single command, like "run pnpm test". And a trigger is what kicks it off: pushing to a branch, opening a PR, that sort of thing.
 
-A workflow is a YAML file that lives in your repo under .github/workflows/. It defines what happens and when.
-
-A job is a collection of steps that run on a fresh virtual machine. Each job gets its own clean environment — nothing from your laptop, nothing from previous runs.
-
-A step is a single command or action. It could be checking out your code, installing dependencies, running tests, or deploying.
-
-A trigger is the event that starts the workflow. Common triggers: pushing to a branch, opening a pull request, or a scheduled cron job.
-
-Let's look at what a workflow looks like for our Color Swipe app.
+Let's look at what our workflow actually looks like.
 
 [~2 min]
 -->
@@ -579,15 +565,15 @@ jobs:
 ```
 
 <!--
-Let's walk through this workflow line by line.
+Okay let me walk through this YAML file.
 
-The trigger: it runs on push to main AND on pull requests targeting main. This means PRs get tested but not deployed. Only pushes to main trigger the deploy.
+At the top, the trigger: it runs on push to main AND on pull requests targeting main. So if you open a PR, it runs the tests but doesn't deploy. Only pushing to main triggers the actual deploy.
 
-The test job: it checks out the code, sets up pnpm and Node.js, installs dependencies, runs Vitest, installs Playwright browsers, and runs E2E tests. The Supabase credentials come from GitHub secrets.
+The test job: checks out the code, sets up pnpm and Node, installs deps, runs Vitest, installs Playwright, runs E2E tests. The Supabase credentials come from GitHub secrets, which we'll set up in a moment.
 
-The deploy job: it has "needs: test" — meaning it only runs after the test job passes. And "if: github.ref == 'refs/heads/main'" — meaning it only runs on pushes to main, not on PRs. It deploys using pnpm deploy with the Cloudflare API token from secrets.
+The deploy job: see where it says "needs: test"? That means it only runs after the test job passes. And "if: github.ref == 'refs/heads/main'" means it only deploys on pushes to main, not on PRs. Makes sense, right? You don't want every PR deploying to production.
 
-Notice the working-directory setting. Since our app lives in part-2/apps/web, every command runs from that directory.
+The working-directory is set because our app lives in a subdirectory of the repo.
 
 [~3 min]
 -->
@@ -635,13 +621,13 @@ Secrets are accessed as `${{ secrets.SECRET_NAME }}` in the workflow YAML.
 </v-click>
 
 <!--
-Secrets in GitHub Actions work like wrangler secrets — they're encrypted values that your workflow can access but no one can read.
+So your workflow needs credentials to deploy and run tests, right? Things like the Cloudflare API token, Supabase URL and key. And you should never put these in your code, don't hardcode them in the YAML file.
 
-You add them in your repository settings. Once added, they're available to all workflows as ${{ secrets.SECRET_NAME }}.
+GitHub Actions has a secrets feature. You go to your repo settings, Secrets and variables, Actions, and add them there. Once added, your workflow accesses them with this dollar-curly-brace syntax, but nobody can read the actual values.
 
-For our workflow, we need three secrets: the Cloudflare API token for deploying, and the Supabase URL and key for the E2E tests to work.
+We need three secrets: Cloudflare API token for deploying, and Supabase URL and key for the E2E tests.
 
-The Cloudflare API token is different from what you used with wrangler login. You need to create one in the Cloudflare dashboard with Workers deploy permissions.
+The Cloudflare API token is different from what you used with wrangler login, you need to create a dedicated one in the Cloudflare dashboard. I'll show you how.
 
 [~2 min]
 -->
@@ -663,15 +649,9 @@ It has `____` blanks for you to fill in. Use what you just learned:
 - **Deploy step**: what command deploys to Cloudflare?
 
 <!--
-Have students open the workflow template and fill in the blanks.
+Okay so in your repo, open .github/workflows/deploy-color-swipe.yml. We've set up a template with blanks for you to fill in based on what we just went through.
 
-Walk around and help. The answers are:
-- branches: [main] for both push and pull_request
-- pnpm test for running tests
-- pnpm exec playwright install --with-deps chromium for installing browsers
-- pnpm test:e2e for running E2E tests
-- if: github.ref == 'refs/heads/main' for the deploy condition
-- pnpm deploy for the deploy step
+The blanks are for the trigger branches, the test commands, the deploy condition, and the deploy step. Take a few minutes to fill these in, and if you get stuck, look back at the workflow slide or ask us.
 
 [~5 min, students fill in the template]
 -->
@@ -694,11 +674,11 @@ Add three secrets to your GitHub repository:
 Go to your fork → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
 
 <!--
-Walk students through creating the Cloudflare API token.
+Alright, now add the secrets. Go to your fork on GitHub, Settings, Secrets and variables, Actions, New repository secret.
 
-The Edit Cloudflare Workers template gives you a token with the right permissions. Copy the token value and add it as a secret in GitHub.
+For the Cloudflare API token, go to the Cloudflare dashboard, Profile, API Tokens, use the "Edit Cloudflare Workers" template. Copy the token and add it as a GitHub secret.
 
-For Supabase, use the same URL and publishable key you used in Part 1.
+For Supabase, use the same URL and publishable key from Part 1. You can find them in your Supabase dashboard under Settings, API.
 
 [~5 min, students configure secrets]
 -->
@@ -728,11 +708,13 @@ Checkpoint:
 - Your app is live at the same `workers.dev` URL from Part 1
 
 <!--
-Have students push and watch the pipeline run in the GitHub Actions tab.
+Alright, moment of truth. Commit the completed workflow file and push to main.
 
-The first run might take a few minutes because of pnpm install and Playwright browser installation. Subsequent runs will be faster thanks to caching.
+Then go to your fork on GitHub, click the Actions tab, and you should see the workflow running. The test job runs first: installing deps, running Vitest, installing Playwright, running E2E tests. If everything passes, the deploy job kicks off.
 
-If the deploy fails, check that the CLOUDFLARE_API_TOKEN secret is set correctly. If tests fail, check the logs for the specific error.
+First run might take a few minutes because it needs to install everything from scratch. Future runs are faster thanks to caching.
+
+If the deploy fails, check the CLOUDFLARE_API_TOKEN secret. If tests fail, click into the job logs to see what happened.
 
 [~5 min, students push and verify pipeline]
 -->
@@ -753,10 +735,11 @@ class: compact
 <WorksOnMyMachineFlow />
 
 <!--
-An application needs to run reliably across different computing environments, from developer’s laptop to production server.
+Okay so, I'm going to take over from Putt here for containers and monitoring.
 
-Walk through the clicks: your laptop, git push, teammate's machine breaks, production breaks.
-No bullet list on this slide — let the terminals tell it. Pause on the last error before moving on.
+So who here has had the experience where you build something on your machine, it works perfectly, and then your teammate clones the repo, runs it, and something's broken? Maybe they have a different version of Python, or they're missing some system dependency.
+
+This is like the most classic problem in software development, right? "It works on my machine" ... yeah but it doesn't work on anyone else's. That's the problem containers solve.
 
 [~2 min]
 -->
@@ -778,7 +761,11 @@ layout: two-cols-header
 ![Containerisation](/docker-meme.webp)
 
 <!--
-Callback to the docker meme from Part 1. This is the packaging format we deferred last session.
+So containers are basically a way to package your code, your runtime, your OS libraries, everything your app needs, into one single image. And if it runs in the container on your laptop, it's gonna run the same way on your teammate's laptop, on the server, wherever.
+
+It's like instead of saying "here's my code, figure out how to run it," you're saying "here's a box that contains everything, just run the box."
+
+Callback to the Docker meme from Part 1, right?
 
 [~1.5 min]
 -->
@@ -809,12 +796,13 @@ Serverless is great until the runtime boundary becomes the problem
 - Easier to test locally: same image runs in prod
 
 <!--
-Based on Cloudflare's serverless vs containers comparison:
-- serverless scales automatically, has less maintenance, and charges for actual runtime
-- containers give more control over the runtime environment and dependencies, but come with more maintenance
-- testing serverless can be harder because the backend environment is harder to replicate locally; containers are easier to test before production because the same image runs everywhere
-- hybrid architectures make sense when one part of the app needs more memory, bigger files, or long-running work
-Use this slide to frame containers as an escape hatch for the AI microservice, not as "serverless bad".
+So you might be wondering, wait, we already deployed on Cloudflare Workers, that was serverless, why do we need containers?
+
+Serverless is great, we showed that in Part 1, right? You just push your code and it runs. But there are limits. Like Cloudflare Workers gives you 128 MB of memory. That's fine for an API, but what if you want to run a machine learning model? Or what if you need Python with specific system libraries?
+
+Containers give you more control. You can use whatever language, install whatever dependencies, and you can test it locally knowing it'll work the same in production.
+
+Think of serverless and containers as different tools for different jobs. For our API and React app, serverless is great. For the AI microservice we're about to build, we need a container.
 
 [~2 min]
 -->
@@ -859,6 +847,16 @@ Use this slide to frame containers as an escape hatch for the AI microservice, n
   </div>
 </div>
 
+<!--
+Okay so, every app needs AI now, right? Like you can't ship anything without some AI feature or your resume doesn't look as impressive.
+
+So we're going to add a Vibe Search feature to Color Swipe. You type in like "ocean breeze" and it finds the color that vibes best with your text. And because we're resume-maxxing, we're going to do this with a Python microservice that runs a sentence embedding model locally.
+
+Now can we just do this on Workers? Well... look at the limits. 128 MB memory limit. The model we want to use needs way more than that. So no, we need a container.
+
+[~1.5 min]
+-->
+
 ---
 class: diagram-heavy compact
 ---
@@ -891,6 +889,16 @@ flowchart TB
 
 </div>
 
+<!--
+So here's what we're actually building. Browser hits the Worker, same as before, serves React and runs the Hono API. But now the Hono API also proxies requests to a FastAPI service on Render.
+
+This FastAPI service is the Vibe Search microservice. It runs a model called all-MiniLM-L6-v2 for sentence embeddings, basically converts text into numbers so we can find the closest matching color.
+
+Two services now: Worker handles everything except the AI part, and the AI runs in a container on Render.
+
+[~1.5 min]
+-->
+
 ---
 layout: section
 ---
@@ -908,6 +916,14 @@ layout: section
 - Each instruction in a Dockerfile creates a **layer**
 - Layers are cached and reused across builds
 
+<!--
+So Docker is the tool we use to build and run containers. Think of it this way: an image is like a class in programming, right? It's a blueprint, a snapshot of a filesystem. And a container is an instance of that image, the actual running thing, like an object.
+
+Each instruction in a Dockerfile creates a layer. And these layers are cached, so if you rebuild and nothing changed, Docker reuses the cached layers. Makes rebuilds really fast.
+
+[~1.5 min]
+-->
+
 
 ---
 ---
@@ -917,15 +933,11 @@ layout: section
 <DockerStack />
 
 <!--
-Walk through the stack top to bottom with clicks.
+Okay so when people say "Docker," they actually mean a whole stack of things.
 
-"Docker" in industry often means the whole path from the command you type to the image that runs in production.
-Keep the explanation concrete:
-- Docker Desktop or OrbStack is what students installed.
-- The docker command is what they type.
-- Docker Engine is the background service that builds images and starts containers.
-- The container image is the portable package.
-- Registries store images, but for today's Render flow, Render can build from the repo directly.
+Docker Desktop or OrbStack, that's what you installed before the workshop. The docker command is what you type in the terminal. Docker Engine is the background service that builds images and starts containers. The image is what you ship, it's portable. And registries like Docker Hub store images.
+
+For today, Render can build from our GitHub repo directly, so we don't need to push to a registry manually.
 
 [~2 min]
 -->
@@ -944,16 +956,13 @@ This pulls an image from Docker Hub, creates a container, runs it, prints output
 
 <!-- Pre-workshop setup should have had students install Docker Desktop or OrbStack -->
 <!--
-Demo script:
+Okay, let's make sure Docker is working. Run docker run hello-world.
 
-docker run hello-world
-docker image ls hello-world
-docker ps -a --filter ancestor=hello-world
+What this does is pull a tiny image from Docker Hub, create a container, run it, print "Hello from Docker!", and stop. If you see that message, Docker is set up correctly.
 
-Expected output:
-- The terminal prints "Hello from Docker!"
-- `docker image ls hello-world` shows the pulled image.
-- `docker ps -a` shows an exited container from that image.
+You can also run docker image ls to see the pulled image and docker ps -a to see the exited container.
+
+[~2 min]
 -->
 
 ---
@@ -973,12 +982,14 @@ When you exit, the container stops. Any files you created are gone.
 Containers are **ephemeral** by default.
 <Terminal class="max-h-1/2" session="docker-basics" persist />
 <!--
-We can run commands like
-python --version
-pip list
-ls /
-exit
- -->
+Now try something more interesting. Run docker run -it python:3.12-slim-trixie bash.
+
+This drops you into a bash shell inside a Linux container with Python installed. Try python --version, pip list, ls /.
+
+And here's the important thing: when you exit, the container stops. Any files you created are gone. Containers are ephemeral by default. They're designed to be disposable, start one, use it, throw it away.
+
+[~2 min]
+-->
 
 ---
 ---
@@ -991,6 +1002,13 @@ exit
 
 ![](/dockerfile.png)
 
+<!--
+So how do we create our own image? We write a Dockerfile. It's basically a recipe, instructions that tell Docker how to build the image.
+
+Every Dockerfile starts with FROM, which specifies the base image you're building on top of. Think of it like inheritance. And each instruction creates a cached layer.
+
+[~1.5 min]
+-->
 
 ---
 ---
@@ -1009,6 +1027,16 @@ COPY . .
 EXPOSE 8000
 CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
+
+<!--
+So here's our Dockerfile. FROM, we start from a UV image with Python 3.12. UV is a really fast Python package manager, kind of like pnpm for Python.
+
+We copy the dependency files first, then install them. We do this before copying our actual code because of caching: if we change our code but not our dependencies, Docker reuses the dependency layer.
+
+Then COPY . . copies the rest. EXPOSE 8000 is documentation. And CMD is the command that runs when the container starts.
+
+[~2 min]
+-->
 
 ---
 ---
@@ -1045,9 +1073,16 @@ class: live-terminal-slide
 
 <!-- Checkpoint:
 
-- FastAPI docs page loads
-- POST returns ranked color results
-- First response is slow while the model downloads -->
+Alright, let's build and run. cd into part-2/apps/vibe-search. docker build -t color-vibe-search . (the dot means "use the Dockerfile in the current directory" and -t tags the image).
+
+Then docker run -p 8000:8000, the -p flag maps port 8000 on your machine to port 8000 in the container. Without this, the container runs but you can't reach it.
+
+Open localhost:8000/docs, you should see the FastAPI docs. Try the curl command.
+
+Note: the first request might be slow because the model downloads at runtime. That's the cold start we'll fix next.
+
+[~5 min, students build and run]
+-->
 
 ---
 ---
@@ -1058,6 +1093,14 @@ class: live-terminal-slide
 - FastAPI can serve `/docs` before the model exists on disk
 - Lazy loading means the first inference pays the model download cost
 - Later requests are faster only if the same container cache survives
+
+<!--
+So you may have noticed the container started quickly but the first API call was slow, right? That's because the model downloads on the first request. FastAPI can serve the /docs page before the model is ready, but actual inference has to wait.
+
+This is the cold start problem: if the container restarts, the first user pays that download cost again.
+
+[~1 min]
+-->
 
 ---
 ---
@@ -1071,7 +1114,16 @@ class: live-terminal-slide
 | Persistent volume/cache | Larger models on stable hosts | Needs platform support |
 | Just call an API bro | Very large models, shared infra | Network and ops complexity |
 
-<!-- For this workshop, `all-MiniLM-L6-v2` is small enough that baking it into the image is a reasonable tradeoff. -->
+<!-- For this workshop, `all-MiniLM-L6-v2` is small enough that baking it into the image is a reasonable tradeoff.
+
+So where should the model live? A few options, each with tradeoffs.
+
+Runtime download: small image, simple, but slow first request. Bake into image: bigger image, but fast first request. Volume or cache: good for bigger models. Or just call an API if the model is huge.
+
+For our model, all-MiniLM-L6-v2 is small enough that baking it in is a reasonable tradeoff. Let's do that.
+
+[~1.5 min]
+-->
 
 ---
 ---
@@ -1093,6 +1145,14 @@ print(f"Loaded model ({dimension}d embeddings)")
 This shifts the download from the first request to `docker build`.
 
 The first request becomes predictable, but the image gets larger because the model files are now part of the image.
+
+<!--
+So this script just loads the model. The key is we run it during docker build, not at runtime. The model gets downloaded and cached in an image layer. When you start the container, the model is already there.
+
+The tradeoff is the image gets bigger. But for a 90 MB model like MiniLM, that's totally fine.
+
+[~1.5 min]
+-->
 
 ---
 ---
@@ -1126,6 +1186,16 @@ To build the reference version without editing your starter Dockerfile:
 ```bash
 docker build -f Dockerfile.preload -t color-vibe-search:preload .
 ```
+
+<!--
+Spot the difference: we added two lines. Copy the preload script and run it during build.
+
+Notice the ordering: dependencies first, then model, then application code. Why? Docker caches layers top to bottom. If you only changed your Python code, Docker reuses the dependency and model layers. Rebuild takes 1 second instead of 30.
+
+Put things that change rarely at the top, things that change often at the bottom. Number one Docker tip.
+
+[~2 min]
+-->
 
 ---
 ---
@@ -1170,9 +1240,12 @@ curl -X POST http://localhost:8000/api/vibe-search \
 
 <!-- Checkpoint:
 
-- FastAPI docs page loads
-- POST returns ranked color results
-- First response is fast because this image already contains the model -->
+Okay, rebuild and run it. Same commands: docker build, docker run.
+
+But this time, the first request should be fast. The model is already in the image. Compare with before: previous build had a slow first request, this one should be instant.
+
+[~5 min, students rebuild and test]
+-->
 
 ---
 layout: default
@@ -1184,25 +1257,11 @@ class: live-terminal-slide
 </div>
 
 <!--
-Demo script:
+Live demo: build and run the preloaded image, then curl to verify fast first response.
 
-cd part-2/apps/vibe-search
-docker build -t color-vibe-search .
-docker run -p 8000:8000 color-vibe-search
+If the build is slow, explain that PyTorch and model layers are the expensive part. For larger models in production, you'd use a volume, cache, or external model service.
 
-In another terminal or after restarting the slide terminal session:
-
-curl -X POST http://localhost:8000/api/vibe-search \
-  -H "Content-Type: application/json" \
-  -d '{"query": "ocean breeze"}'
-
-Expected output:
-- `docker build` completes and tags `color-vibe-search`.
-- `docker run` starts Uvicorn on `0.0.0.0:8000`.
-- `/docs` loads in the browser.
-- The curl response returns ranked color results quickly on the first request because the image already contains the model.
-
-If the build is slow, keep the static command slide visible, explain that PyTorch and model layers are the expensive part, and remind students that large production models often belong in a volume, cache, or external model service instead.
+[~3 min]
 -->
 
 
@@ -1227,6 +1286,13 @@ class: media-heavy
   - Google Cloud Run (offers $300 in free credit but can be a pain to setup), AWS Fargate
   - Cloudflare Containers only available with paid plan :(
 
+<!--
+So we're deploying on Render. It's a platform as a service, you give them your code or Docker image, they run it.
+
+Why Render? They have a free tier. Not the most generous, and honestly might not be free forever, but it works for now. Google Cloud Run is an alternative with $300 credits, but setup is a pain. Cloudflare has containers too but only on paid plans.
+
+[~1.5 min]
+-->
 
 ---
 ---
@@ -1238,6 +1304,14 @@ class: media-heavy
 - Registries matter when a platform needs to pull a prebuilt image
 
 For this workshop, Render builds the image from your GitHub repo's Dockerfile.
+
+<!--
+Container registries are like npm but for Docker images. Docker Hub, GitHub GHCR, etc.
+
+For today, we don't need a registry because Render builds directly from the repo. You push code, Render finds the Dockerfile, builds, and deploys. In the appendix we show the full CI/CD flow with a registry if you're interested.
+
+[~1 min]
+-->
 
 ---
 ---
@@ -1256,14 +1330,15 @@ For this workshop, Render builds the image from your GitHub repo's Dockerfile.
 Render builds the image from the Dockerfile in your repo and redeploys when you push changes.
 
 <!--
-Walk through the Render dashboard live. Build takes a few minutes because of PyTorch.
-If the repo layout differs, use Render's Dockerfile path setting instead of Root Directory.
+Okay let's deploy. Go to render.com, New, Web Service. Connect your GitHub repo.
 
-Checkpoint:
+Set language to Docker. Root directory to part-2/apps/vibe-search. Instance type: Free. Then deploy.
 
-- Render gives you a public URL
-- `https://<your-service>.onrender.com/docs` loads the FastAPI Swagger UI
-- POST `/api/vibe-search` returns results
+Render builds the image from the Dockerfile. Takes a few minutes because of PyTorch. Be patient.
+
+Once done, Render gives you a public URL. Hit /docs and you should see the FastAPI Swagger UI.
+
+[~5 min, students deploy to Render]
 -->
 
 
@@ -1289,8 +1364,13 @@ pnpm wrangler secret put VIBE_SEARCH_API_KEY
 ```
 
 <!--
-This is a workshop action slide. Give everyone a moment to generate the key,
-then remind them the same generated value must be configured in Render too.
+Alright, Vibe Search is running on Render. Now connect it to the Worker.
+
+Generate a random API key with this node command. Copy it, you need it in two places: Cloudflare and Render. Same value, they need to match.
+
+Set the secrets with wrangler secret put. VIBE_SEARCH_URL is the Render URL, VIBE_SEARCH_API_KEY is the key you generated.
+
+[~3 min]
 -->
 
 ---
@@ -1317,6 +1397,14 @@ type Bindings = {
   SENTRY_DEBUG_ENABLED?: string;
 };
 ```
+
+<!--
+The frontend already has a Vibe Search box wired up, it calls POST /api/vibe-search. But the route doesn't do anything yet.
+
+Add the new environment variable bindings to the Worker's type definition. This just tells TypeScript what env vars to expect.
+
+[~1 min]
+-->
 
 ---
 class: compact
@@ -1354,6 +1442,14 @@ app.post("/api/vibe-search", async (c) => {
 });
 ```
 
+<!--
+This proxy route forwards the browser's request to Render. Notice the API key goes as a header, X-Internal-Api-Key. The browser never knows about this key and never talks to Render directly.
+
+The Worker acts as a proxy. Important for security.
+
+[~1.5 min]
+-->
+
 ---
 ---
 
@@ -1369,7 +1465,12 @@ pnpm run deploy
 
 The browser never talks to Render directly. The Worker acts as a proxy.
 
-<!-- Render free tier spins down after 15 min of inactivity. First request after spindown takes ~30s. This is a container cold start — compare with Workers' near-zero cold starts. -->
+<!-- Redeploy with pnpm run deploy. Then try Vibe Search, type "ocean breeze" or "sunset."
+
+One thing: Render free tier spins down after 15 minutes idle. First request after that takes about 30 seconds. That's a container cold start. Compare with Workers, basically zero cold start. Different tradeoffs.
+
+[~3 min]
+-->
 
 ---
 ---
@@ -1384,6 +1485,15 @@ The browser never talks to Render directly. The Worker acts as a proxy.
   - **Rate limits + input limits**: cap request size, prompt length, timeout, and calls/user
   - **Do not rely on CORS**: CORS does not stop direct `curl`
 
+<!--
+Okay let's talk security. Right now Vibe Search is technically public, if someone figures out the Render URL, they can hit it directly.
+
+Worst case, your bill goes brrr. There are a few ways to lock this down. We're going with an internal API key.
+
+Important: do NOT rely on CORS for security. CORS is a browser feature. It doesn't stop someone from curling your endpoint directly.
+
+[~2 min]
+-->
 
 ---
 ---
@@ -1426,6 +1536,15 @@ def vibe_search(request: VibeSearchRequest) -> VibeSearchResponse:
 
 Save, redeploy `vibe-search`, then redeploy the Worker.
 
+<!--
+Add the same VIBE_SEARCH_API_KEY in Render's environment variables. Use the same value as Cloudflare.
+
+The FastAPI code already has a dependency that checks for this header. If the key is missing or wrong, it rejects the request. If the key env var isn't set at all, it skips the check, so local dev still works.
+
+Save, redeploy Vibe Search on Render, then redeploy the Worker too.
+
+[~3 min]
+-->
 
 ---
 layout: section
@@ -1447,9 +1566,14 @@ What if you had 5 services? A database? A cache?
 
 Docker Compose lets you define and run multiple containers with one command.
 
-<!-- **Compose is a local development tool, not a production deployment tool.**
+<!-- Okay so here's a problem. For local dev, you now have two services: pnpm dev for the Worker and docker run for FastAPI. Two terminals, remember the right flags.
 
-In production, each service runs on its own platform (Workers, Render, Supabase). Locally, you want one command to start everything. -->
+What if you had 5 services? A database? A cache? Managing all of that manually is painful.
+
+Docker Compose solves this. One file, one command, everything starts.
+
+[~1 min]
+-->
 
 ---
 ---
@@ -1484,6 +1608,16 @@ volumes:
   pgdata:
 ```
 
+<!--
+Here's our docker-compose.yaml. Two services: vibe-search builds from our Dockerfile, postgres uses the official image.
+
+Ports maps container to host. The named volume pgdata means database data persists even if you restart.
+
+Just run docker compose up from part-2/ and both start together.
+
+[~1.5 min]
+-->
+
 ---
 ---
 
@@ -1493,6 +1627,12 @@ volumes:
 - **`image: postgres:16`**: pulls a pre-built image (this is what Supabase runs under the hood)
 - **`volumes`**: named volumes persist data across container restarts
 - **Networking**: services in the same Compose file can reach each other by name (`postgres:5432`)
+
+<!--
+Compose gives you a few things. Build means it builds the image for you. Volumes persist data. And networking. services in the same Compose file can reach each other by name. So instead of localhost:5432, the container can connect to postgres:5432.
+
+[~1 min]
+-->
 
 ---
 layout: default
@@ -1507,24 +1647,13 @@ class: compact live-terminal-slide
 </div>
 
 <!--
-Demo script:
+Let's try it. cd into part-2, docker compose up. Both services start.
 
-cd part-2
-docker compose up
+You can connect to the database with docker compose exec postgres psql.
 
-In another terminal:
+Important distinction. Compose is for local dev, not production. In production, each service runs on its own platform. But locally, one command to start everything.
 
-docker compose exec postgres psql -U postgres -d colorswipe
-\dt
-\q
-
-Expected output:
-- Compose starts both services from one file.
-- The `vibe-search` service logs show the FastAPI app starting.
-- The `postgres` service is reachable by Compose service name.
-- The named volume keeps data after `docker compose down` and `docker compose up`.
-
-If Compose fails because files are not ready on a student's machine, use the static YAML slide to explain the mental model: one file declares services, ports, environment variables, volumes, and local networking.
+[~3 min]
 -->
 
 ---
@@ -1539,6 +1668,14 @@ If Compose fails because files are not ready on a student's machine, use the sta
 | Production at scale | Managed services (Render, Supabase) or orchestrators (K8s) |
 
 Compose mirrors production's **shape** (same services, same communication) but not its **infrastructure**.
+
+<!--
+Quick summary. Local dev, absolutely use Compose. Side project on a VPS, fine too. Production at scale, use managed services or Kubernetes. But please don't use Kubernetes for orbital.
+
+Key insight: Compose mirrors your production architecture's shape but not its infrastructure. It's a local simulation.
+
+[~1 min]
+-->
 
 ---
 layout: section
@@ -1565,6 +1702,16 @@ What happens when you discover a bug in production?
   - PostHog
 - For LLM applications: Langfuse
 
+<!--
+Alright, last topic: monitoring.
+
+Deploying is really only half the battle, right? What happens when your app breaks in production? You're not sitting there watching logs 24/7.
+
+Logs exist. wrangler tail, Render logs. but you have to be looking at them. Monitoring tools like Sentry capture errors automatically and notify you. We're setting up Sentry today.
+
+[~2 min]
+-->
+
 ---
 ---
 # Sentry
@@ -1577,13 +1724,11 @@ What happens when you discover a bug in production?
 - Performance data (slow endpoints, slow queries)
 
 <!--
-Sentry is the tool we'll use for error monitoring today.
+Sentry captures errors automatically. When an exception happens in production, your app sends an event to Sentry. It groups similar errors, shows the full stack trace, which request caused it, how often it's happening.
 
-The big idea is simple: when an exception happens in production, your app sends an event to Sentry. Sentry groups similar events into issues, shows you the stack trace, and gives enough request context to start debugging.
+It's different from logs because it's organized around actual failures. You don't need to be tailing logs at the exact moment something breaks.
 
-Logs are still useful, but Sentry is different because it is organized around actual failures. You do not need to be tailing logs at the exact moment something breaks.
-
-Next slide is an interactive Sentry UI walkthrough.
+Let me show you the Sentry UI.
 
 [~1 min]
 -->
@@ -1593,9 +1738,9 @@ url: https://demo.arcade.software/IUuJGLUBdRIa2yBFE35v?embed
 ---
 
 <!--
-Walk through the Arcade demo: create a project, pick a platform, and note where to copy the DSN on the setup screen.
+This is an interactive demo of the Sentry UI. Creating a project, picking a platform, finding the DSN.
 
-Remind students that on the next slide they will create two projects (Worker + FastAPI), not just the React example shown in the demo.
+On the next slide you'll create two Sentry projects, one for the Worker, one for FastAPI. Each deployed service gets its own project so you can tell which service an error came from.
 
 [~3 min]
 -->
@@ -1615,15 +1760,13 @@ Create **two projects**:
 | FastAPI service | Python / FastAPI | `vibe-search-api` |
 
 <!--
-Walk students through creating the two projects.
+Okay, go to sentry.io, sign in or create an account, it's free.
 
-For the Worker project, choose Cloudflare Workers if it appears in the platform list. If not, JavaScript is also fine because we will install the Cloudflare SDK manually.
+Create two projects. First, Cloudflare Workers platform, name it color-swipe-worker. Second, Python/FastAPI, name it vibe-search-api.
 
-For the Python service, choose Python and FastAPI if Sentry offers the framework option.
+Each gets its own DSN. Make sure you copy the right DSN for the right project, don't mix them up, otherwise Python errors show up in the Worker project and it gets confusing.
 
-The important thing is not the exact wizard screen. The important thing is that each deployed runtime gets its own project and therefore its own DSN.
-
-[~4 min]
+[~4 min, students create projects]
 -->
 
 ---
@@ -1647,11 +1790,11 @@ https://abc123@o123456.ingest.sentry.io/7890123
 The DSN tells the SDK which Sentry project should receive events.
 
 <!--
-Show this on screen if possible.
+For each project: Settings, Client Keys (DSN), copy the DSN. It looks like a URL with a long string.
 
-The DSN is not the same as an API token. It identifies where events should be sent. It is often visible in frontend apps, but we still avoid hardcoding it because environment variables make deployments easier to configure and rotate.
+The DSN is not an API token, it identifies where to send events. We put it in environment variables for clean configuration.
 
-Make sure students copy the DSN from each project, not the organization slug and not an auth token.
+Make sure you're copying the DSN, not an auth token or org slug.
 
 [~2 min]
 -->
@@ -1683,9 +1826,13 @@ app = FastAPI()
 Unhandled exceptions are captured and sent to your `vibe-search-api` project.
 
 <!--
-We make Sentry optional. If SENTRY_DSN is missing, the service still starts, which is helpful for local development and tests.
+For Python, super easy. Install the SDK, then sentry_sdk.init() with the DSN.
 
-The traces sample rate is intentionally low. A sample rate of 1.0 is convenient for demos, but it means every transaction is reported. For a workshop app, 0.1 keeps the example closer to production habits.
+We make it optional, if SENTRY_DSN isn't set, the app still starts. Local dev works fine without Sentry.
+
+traces_sample_rate 0.1 means 10% of transactions for performance data. For a demo you could set 1.0, but in practice you don't want everything, too noisy.
+
+After this, any unhandled exception automatically shows up in Sentry. You don't have to do anything extra.
 
 [~2 min]
 -->
@@ -1714,9 +1861,9 @@ Render:
 Use the DSN from the `vibe-search-api` Sentry project.
 
 <!--
-This mirrors the way we configured other deployment secrets earlier.
+Local dev. add SENTRY_DSN to .env in the vibe-search directory. Production. add it in Render's environment variables, same as the API key earlier.
 
-Students should not paste the Worker DSN here. If events from Python show up in color-swipe-worker, they copied the wrong project DSN.
+Make sure you use the DSN from vibe-search-api, not the Worker project. If you use the wrong one, Python errors show up in the wrong place.
 
 [~2 min]
 -->
@@ -1760,9 +1907,11 @@ export default app;
 Use the DSN from the `color-swipe-worker` Sentry project.
 
 <!--
-For Hono apps, middleware is the preferred integration because it runs inside the framework request pipeline. The older `Sentry.withSentry(...)` wrapper still works for plain Workers, but we do not want both at once.
+For the Worker, install @sentry/cloudflare and @sentry/hono.
 
-`upload_source_maps` is optional for basic error capture, but it makes production stack traces readable. Wrangler generates and uploads source maps on `wrangler deploy`, not during local `wrangler dev`.
+Add nodejs_compat and upload_source_maps to wrangler.jsonc. Source maps are important, without them, stack traces in Sentry are minified garbage.
+
+The Sentry middleware wraps every request, so if anything throws, it's captured automatically. Same pattern, if SENTRY_DSN isn't set, Sentry is disabled.
 
 [~3 min]
 -->
@@ -1797,9 +1946,11 @@ pnpm run deploy
 Once the deploy finishes, Worker errors appear in `color-swipe-worker`.
 
 <!--
-For SENTRY_ENVIRONMENT, students can paste production when Wrangler prompts them.
+Same drill. Local. add to .dev.vars. Production. wrangler secret put for SENTRY_DSN and SENTRY_ENVIRONMENT.
 
-If they skip SENTRY_ENVIRONMENT, the code defaults to production. The important variable is SENTRY_DSN.
+For SENTRY_ENVIRONMENT, just type "production" when prompted. If you forget, code defaults to "production" anyway. The important one is SENTRY_DSN.
+
+Redeploy with pnpm run deploy. After that, Worker errors show up in your Sentry project.
 
 [~2 min]
 -->
@@ -1852,11 +2003,15 @@ pnpm run deploy
 ```
 
 <!--
-This bug is realistic: the Worker and FastAPI service disagree on the response shape.
+Okay, fun part. We're going to intentionally break the app and see what Sentry tells us.
 
-FastAPI returns `results`, but the Worker accidentally reads `matches`. This is a common integration mistake when a frontend or proxy is updated against the wrong API contract.
+This is a realistic bug, we change the proxy response handling in the Worker. Instead of passing through the upstream response, we try to parse it and read a field that doesn't exist.
 
-This should throw on `data.matches[0]`, giving Sentry a stack trace that points at the exact broken line.
+See what we're doing? We're reading data.matches[0], but FastAPI returns "results", not "matches". So this crashes because matches is undefined.
+
+This is actually super common in real projects, frontend and backend disagree on the API contract. Someone changes the response shape and doesn't update the caller.
+
+Deploy this broken version.
 
 [~3 min]
 -->
@@ -1883,9 +2038,11 @@ What the user sees:
 Now open Sentry -> `color-swipe-worker` -> **Issues**.
 
 <!--
-The point here is that the user-facing symptom is vague. The app does not tell you about the response-shape mismatch.
+Open your deployed app and use Vibe Search. Type "ocean breeze."
 
-Sentry should point at the Worker line where `data.matches[0]` crashed.
+The user sees: search starts, result doesn't appear, falls back to a generic message. From their perspective, "it's broken" but no idea why.
+
+Now open Sentry, go to color-swipe-worker, Issues tab. You should see a new issue.
 
 [~2 min]
 -->
@@ -1926,11 +2083,11 @@ const topMatch = data.matches[0];
 ```
 
 <!--
-We are not leaking the API key or internal headers into Sentry.
+So we have two error scenarios in the code.
 
-For genuine upstream failures, we record enough to debug: route, upstream service, upstream status, and the search query that triggered it.
+First, if the upstream request itself fails, say Render is down or 500. We capture that with Sentry.withScope and add context: service name, status code, URL. Enough to debug without leaking API keys.
 
-For the deliberate response-shape bug, the most useful signal is the source-mapped stack trace pointing at `data.matches[0]`.
+But our intentional bug is different, the upstream request succeeded, the Worker just read the wrong field. The stack trace pointing at data.matches[0] is the key clue.
 
 [~2 min]
 -->
@@ -1953,11 +2110,11 @@ In the Sentry issue, look for:
 What does the stack trace tell us? The upstream service replied, but the Worker expected the wrong JSON field.
 
 <!--
-This is the debugging moment.
+Okay so in the Sentry issue. issue title "Cannot read properties of undefined." Stack trace points at src/worker.ts, the data.matches[0] line. HTTP request was POST /api/vibe-search. Breadcrumbs show the fetch to Render succeeded. 200 OK.
 
-The key clue is that the crash happens after the fetch, not during the fetch. The Render service responded, then our Worker trusted the wrong TypeScript shape and tried to read a property that does not exist.
+So what does this tell us? Upstream replied fine, but we expected "matches" when the response has "results." That's the bug.
 
-Students should compare the FastAPI response shape (`results`) with the Worker bug (`matches`).
+This is the power of monitoring: user sees "it doesn't work," Sentry tells you exactly which line crashed and why.
 
 [~3 min]
 -->
@@ -1987,11 +2144,11 @@ pnpm run deploy
 
 
 <!--
-This closes the loop: observe user symptom, inspect Sentry, form a hypothesis, fix the code, redeploy, verify, and resolve the issue.
+Alright, fix it. Change the code back to just returning the upstream response directly.
 
-The header-mismatch bug is also realistic, but it needs more inference because Sentry mainly shows "upstream 401". The response-shape bug is better for a workshop because the stack trace points directly at the faulty line.
+Redeploy. Test Vibe Search again, should work now.
 
-Keep the disabled /api/debug-sentry route as an instructor fallback only. The main demo should be this real Vibe Search contract bug.
+In Sentry, mark the issue as resolved. That closes the loop: observe symptom, check Sentry, find root cause, fix, redeploy, verify, resolve. That's the workflow for production debugging.
 
 [~4 min]
 -->
@@ -2012,7 +2169,9 @@ Keep the disabled /api/debug-sentry route as an instructor fallback only. The ma
 If stack traces look minified in production, check that `upload_source_maps` is enabled and redeploy. Local `wrangler dev` does not upload source maps.
 
 <!--
-Source maps are a production deploy improvement, not a blocker for the workshop demo. Basic capture still works without them.
+Quick summary of Sentry features. Issues: grouped errors with frequency. Stack traces: exact line. Breadcrumbs: what happened before the error. Performance: slowest endpoints. Alerts: email or Slack when error rates spike.
+
+If stack traces look minified, check upload_source_maps in wrangler.jsonc and redeploy.
 
 [~1 min]
 -->
@@ -2048,6 +2207,16 @@ Source maps are a production deploy improvement, not a blocker for the workshop 
 </div>
 </div>
 
+<!--
+So let's step back. Look at everything across both sessions.
+
+Part 1: React on Workers, Hono API, Supabase, manual deploy. Part 2: tests, CI/CD, containerized Python microservice, Render, Docker Compose, Sentry.
+
+That's a legit production setup. Basically what a startup's infrastructure might look like. You should feel good about that.
+
+[~1.5 min]
+-->
+
 ---
 layout: quote
 ---
@@ -2055,6 +2224,12 @@ layout: quote
 # Ship the smallest real thing first.
 
 Then make shipping boring.
+
+<!--
+Ship the smallest real thing first. Then make shipping boring. That's the goal of everything we covered today. CI/CD makes deploys boring. Tests make refactoring boring. Monitoring makes debugging boring. Boring is good when it comes to infrastructure.
+
+[~0.5 min]
+-->
 
 ---
 layout: center
@@ -2065,7 +2240,14 @@ class: text-center
 
 Your feedback helps us improve future sessions.
 
-<!-- TODO: Add feedback QR code and link -->
+<!-- TODO: Add feedback QR code and link
+
+That's it for Part 2! Thanks for sticking with us through both sessions. Please fill out the feedback form, it genuinely helps us improve these workshops.
+
+If you have questions about any of this for your orbital project, feel free to come talk to us.
+
+[~1 min]
+-->
 
 ---
 layout: section
